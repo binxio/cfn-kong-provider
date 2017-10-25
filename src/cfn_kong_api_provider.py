@@ -50,7 +50,7 @@ request_schema = {
                     "type": "boolean", "default": False
                 },
                 "strip_uri": {
-                    "type": "boolean", "default": False
+                    "type": "boolean", "default": True
                 },
                 "preserve_host": {
                     "type": "boolean", "default": False
