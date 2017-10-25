@@ -70,6 +70,13 @@ def test_update():
     assert response['Status'] == 'SUCCESS', response['Reason']
 
 
+def test_bad_delete():
+    request = Request('Delete', {}, "NotaUUidClearly")
+    response = handler(request, {})
+    assert response['Status'] == 'SUCCESS', response['Reason']
+    assert response['Reason'] != ''
+
+
 class Request(dict):
 
     @property
