@@ -413,6 +413,43 @@
         "ServiceToken": { "Fn::Join": [ ":", [ "arn:aws:lambda", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "function:binxio-cfn-kong-provider" ]]}
       }
     },
+    "KeyAuthPlugin": {
+      "Type": "Custom::KongPlugin",
+      "DependsOn": "HeaderAPI",
+      "Properties": {
+        "AdminURL": {
+          "Fn::Join": [
+            "",
+            [
+              "http://",
+              {
+                "Fn::If": [
+                  "CreateVpcResources",
+                  {
+                    "Fn::GetAtt": [
+                      "KongLoadBalancerNewVPC",
+                      "DNSName"
+                    ]
+                  },
+                  {
+                    "Fn::GetAtt": [
+                      "KongLoadBalancerExistingVPC",
+                      "DNSName"
+                    ]
+                  }
+                ]
+              },
+              ":8001"
+            ]
+          ]
+        },
+        "Plugin": {
+          "name": "key-auth",
+          "api-id": { "Fn::GetAtt": [ "HeaderAPI", "id" ] }
+        },
+        "ServiceToken": { "Fn::Join": [ ":", [ "arn:aws:lambda", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "function:binxio-cfn-kong-provider" ]]}
+      }
+    },
     "VPC": {
       "Condition": "CreateVpcResources",
       "Type": "AWS::EC2::VPC",
