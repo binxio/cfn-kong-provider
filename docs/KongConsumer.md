@@ -31,10 +31,11 @@ You can specify the following properties:
     "JWT" - RS256 JWT token generator configuration (optional).
     "JWT.Issuer" - issuer of the JWT token, defaults to 'admin'.
     "JWT.PrivateKeyParameterName" - parameter store name containing the private key to sign the token with (required).
-    "ServiceToken" - pointing to the function implementing this resource.
-    "Consumer" - object containing all the properties as defined by [add-consumer](https://getkong.org/docs/0.11.x/admin-api/#add-consumer)
+    "ServiceToken" - pointing to the function implementing this resource (required).
+    "Consumer" - object containing all the properties as defined by add-consumer (required).
 
-
+Check out all properties for "Plugin" at [add-consumer](https://getkong.org/docs/0.11.x/admin-api/#add-consumer).
+ 
 ## Return values
 With 'Fn::GetAtt' the following values are available:
 

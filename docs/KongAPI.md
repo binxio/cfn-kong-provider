@@ -38,8 +38,9 @@ You can specify the following properties:
     "JWT.Issuer" - issuer of the JWT token, defaults to 'admin'.
     "JWT.PrivateKeyParameterName" - parameter store name containing the private key to sign the token with (required)
     "ServiceToken" - pointing to the function implementing this resource (required)
-    "API" - object containing all the properties as defined by [add-api](https://getkong.org/docs/0.11.x/admin-api/#add-api) (required).
+    "API" - object containing all the properties as defined by Kong add-api (required).
 
+Check out all properties for "API" at [add-api](https://getkong.org/docs/0.11.x/admin-api/#add-api).
 
 ## Return values
 With 'Fn::GetAtt' the following values are available:
