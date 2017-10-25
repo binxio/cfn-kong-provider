@@ -50,6 +50,7 @@ class KongProvider(ResourceProvider):
             self.physical_resource_id = r['id']
             self.set_attribute('id', self.physical_resource_id)
         else:
+            self.physical_resource_id = 'failed-to-create'
             self.fail('Could not create the %s, %s' % (self.property_name, response.text))
 
     def update(self):

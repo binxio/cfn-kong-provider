@@ -445,7 +445,7 @@
         },
         "Plugin": {
           "name": "key-auth",
-          "api-id": { "Fn::GetAtt": [ "HeaderAPI", "id" ] }
+          "api_id": { "Fn::GetAtt": [ "HeaderAPI", "id" ] }
         },
         "ServiceToken": { "Fn::Join": [ ":", [ "arn:aws:lambda", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "function:binxio-cfn-kong-provider" ]]}
       }
