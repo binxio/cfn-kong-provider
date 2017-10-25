@@ -1,5 +1,5 @@
 # Custom::KongAPI
-The `Custom::KongAPI` creates a Kong API .
+The `Custom::KongAPI` creates a Kong API.
 
 ## Syntax
 To declare this entity in your AWS CloudFormation template, use the following syntax:
@@ -8,7 +8,6 @@ To declare this entity in your AWS CloudFormation template, use the following sy
 {
   "Type" : "Custom::KongAPI",
   "Properties" : {
-    "Name": String
     "AdminUrl": String,
     "JWT": {
         "Issuer": String,
@@ -16,8 +15,9 @@ To declare this entity in your AWS CloudFormation template, use the following sy
     },
     "ServiceToken" : String,
     "API" : {
-      "http_if_terminated": false,
-      "https_only": true,
+      "name": String,
+      "http_if_terminated": true,
+      "https_only": false,
       "preserve_host": false,
       "retries": 5,
       "strip_uri": true,
@@ -33,12 +33,12 @@ To declare this entity in your AWS CloudFormation template, use the following sy
 ## Properties
 You can specify the following properties:
 
-    "Name" - of the API.
-    "AdminUrl" - pointing to the Kong Admin 
-    "JWT.Issuer" - issuer of the JWT token
-    "JWT.PrivateKeyParameterName" - parameter store name containing the private key to sign the token with
-    "ServiceToken" - pointing to the function implementing this
-    "API" - object containing all the properties as defined by [add-api](https://getkong.org/docs/0.11.x/admin-api/#add-api)
+    "AdminUrl" - pointing to the Kong Admin  (required).
+    "JWT" - RS256 JWT token generator configuration (optional)
+    "JWT.Issuer" - issuer of the JWT token, defaults to 'admin'.
+    "JWT.PrivateKeyParameterName" - parameter store name containing the private key to sign the token with (required)
+    "ServiceToken" - pointing to the function implementing this resource (required)
+    "API" - object containing all the properties as defined by [add-api](https://getkong.org/docs/0.11.x/admin-api/#add-api) (required).
 
 
 ## Return values

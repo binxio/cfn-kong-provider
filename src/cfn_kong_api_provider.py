@@ -2,7 +2,7 @@ from cfn_kong_provider import KongProvider
 
 request_schema = {
     "type": "object",
-    "required": ["AdminURL"],
+    "required": ["AdminURL", "API"],
     "properties": {
         "AdminURL":  {
             "type": "string",  "pattern": "^https?://.+",
