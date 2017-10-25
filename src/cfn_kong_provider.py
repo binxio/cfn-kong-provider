@@ -71,5 +71,7 @@ class KongProvider(ResourceProvider):
         response = requests.delete(url, headers=self.headers)
         if response.status_code in (200, 204, 404):
             pass
+        elif response.status_code == 400:
+            log.error('delete failed, %s', response.text)
         else:
             self.fail('Could not delete the %s, %s' % (self.property_name, response.text))
