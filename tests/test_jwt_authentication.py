@@ -60,6 +60,19 @@ def test_with_jwt():
     api_response = requests.get(url)
     assert api_response.status_code == 404
 
+    # check bad private key
+    request = Request('Create', api)
+    request['ResourceProperties']['JWT'] = {'Issuer': 'Admin', 'PrivateKeyParameterName': 'does-not-exist'}
+    response = handler(request, {})
+    assert response['Status'] == 'FAILED', response['Reason']
+    assert response['Reason'].startswith('could not get private key')
+
+    # check bad AdminURL
+    request = Request('Create', api)
+    request['ResourceProperties']['AdminURL'] = 'http://does-not-resolve-does-it'
+    response = handler(request, {})
+    assert response['Status'] == 'FAILED', response['Reason']
+
     remove_secure_admin_api(name, jwt_config)
 
 

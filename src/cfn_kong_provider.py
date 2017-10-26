@@ -37,42 +37,56 @@ class KongProvider(ResourceProvider):
                 self.headers['Authorization'] = 'Bearer %s' % jwt.token
             except ClientError as e:
                 self.fail('could not get private key, %s' % e.response['Error'])
+                return False
+        return True
 
     @property
     def resource_url(self):
         return '%s/%s' % (self.get('AdminURL'), self.resource_name)
 
     def create(self):
-        self.add_jwt()
-        response = requests.post(self.resource_url, headers=self.headers, json=self.get(self.property_name))
-        if response.status_code in (200, 201):
-            r = response.json()
-            self.physical_resource_id = r['id']
-            self.set_attribute('id', self.physical_resource_id)
+        if self.add_jwt():
+            try:
+                response = requests.post(self.resource_url, headers=self.headers, json=self.get(self.property_name))
+                if response.status_code in (200, 201):
+                    r = response.json()
+                    self.physical_resource_id = r['id']
+                    self.set_attribute('id', self.physical_resource_id)
+                else:
+                    self.physical_resource_id = 'failed-to-create'
+                    self.fail('Could not create the %s, %s' % (self.property_name, response.text))
+            except IOError as e:
+                self.physical_resource_id = 'failed-to-create'
+                self.fail('Could not create the %s, %s' % (self.property_name, str(e)))
         else:
             self.physical_resource_id = 'failed-to-create'
-            self.fail('Could not create the %s, %s' % (self.property_name, response.text))
 
     def update(self):
-        self.add_jwt()
-        url = '%s/%s' % (self.resource_url, self.physical_resource_id)
+        if self.add_jwt():
+            url = '%s/%s' % (self.resource_url, self.physical_resource_id)
 
-        response = requests.patch(url, headers=self.headers, json=self.get(self.property_name))
-        if response.status_code in (200, 201):
-            r = response.json()
-            self.physical_resource_id = r['id']
-            self.set_attribute('id', self.physical_resource_id)
-        else:
-            self.fail('Could not update the %s, %s' % (self.property_name, response.text))
+            try:
+                response = requests.patch(url, headers=self.headers, json=self.get(self.property_name))
+                if response.status_code in (200, 201):
+                    r = response.json()
+                    self.physical_resource_id = r['id']
+                    self.set_attribute('id', self.physical_resource_id)
+                else:
+                    self.fail('Could not update the %s, %s' % (self.property_name, response.text))
+            except IOError as e:
+                self.fail('Could not update the %s, %s' % (self.property_name, str(e)))
 
     def delete(self):
-        self.add_jwt()
-        url = '%s/%s' % (self.resource_url, self.physical_resource_id)
+        if self.add_jwt():
+            url = '%s/%s' % (self.resource_url, self.physical_resource_id)
 
-        response = requests.delete(url, headers=self.headers)
-        if response.status_code in (200, 204, 404):
-            pass
-        elif response.status_code == 400:
-            self.success('delete failed, %s' % response.text)
-        else:
-            self.fail('Could not delete the %s, %s' % (self.property_name, response.text))
+            try:
+                response = requests.delete(url, headers=self.headers)
+                if response.status_code in (200, 204, 404):
+                    pass
+                elif response.status_code == 400:
+                    self.success('delete failed, %s' % response.text)
+                else:
+                    self.fail('Could not delete the %s, %s' % (self.property_name, response.text))
+            except IOError as e:
+                self.fail('Could not delete the %s, %s' % (self.property_name, str(e)))
