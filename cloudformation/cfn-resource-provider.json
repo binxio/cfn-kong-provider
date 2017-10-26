@@ -2,7 +2,7 @@
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "CloudFormation Kong API Gateway Provider",
   "Parameters": {
-    "VpcId": {
+    "AppVPC": {
       "Type": "AWS::EC2::VPC::Id",
       "Default": ""
     },
@@ -35,7 +35,7 @@
     "DoNotAttachToVpc": {
       "Fn::Equals": [
         {
-          "Ref": "VpcId"
+          "Ref": "AppVPC"
         },
         ""
       ]
@@ -89,6 +89,9 @@
     "LambdaRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
+        "ManagedPolicyArns": [
+          "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+        ],
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
           "Statement": [
