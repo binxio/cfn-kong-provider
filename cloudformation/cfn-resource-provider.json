@@ -20,7 +20,7 @@
     },
     "CFNKongProviderZipFileName": {
       "Type": "String",
-      "Default": "lambdas/cfn-kong-provider-0.2.0.zip"
+      "Default": "lambdas/cfn-kong-provider-0.2.1.zip"
     }
   },
   "Conditions": {
