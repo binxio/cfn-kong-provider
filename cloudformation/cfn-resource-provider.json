@@ -2,6 +2,18 @@
   "AWSTemplateFormatVersion": "2010-09-09",
   "Description": "CloudFormation Kong API Gateway Provider",
   "Parameters": {
+    "VpcId": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Default": ""
+    },
+    "PrivateSubnets": {
+      "Type": "List<AWS::EC2::Subnet::Id>",
+      "Default": ""
+    },
+    "DefaultSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup::Id",
+      "Default": ""
+    },
     "LambdaS3Bucket": {
       "Type": "String",
       "Default": ""
@@ -16,6 +28,14 @@
       "Fn::Equals": [
         {
           "Ref": "LambdaS3Bucket"
+        },
+        ""
+      ]
+    },
+    "DoNotAttachToVpc": {
+      "Fn::Equals": [
+        {
+          "Ref": "VpcId"
         },
         ""
       ]
@@ -87,7 +107,7 @@
         }
       }
     },
-    "CFNCustomProvider": {
+    "CFNKongProvider": {
       "Type": "AWS::Lambda::Function",
       "DependsOn": [
         "LambdaRole"
@@ -118,27 +138,31 @@
             "Ref": "CFNKongProviderZipFileName"
           }
         },
-        "FunctionName": {
-          "Fn::Join": [
-            ":",
-            [
-              "arn:aws:lambda",
-              {
-                "Ref": "AWS::Region"
-              },
-              {
-                "Ref": "AWS::AccountId"
-              },
-              "function:binxio-cfn-kong-provider"
-            ]
-          ]
-        },
+        "FunctionName": "binxio-cfn-kong-provider",
         "Handler": "kong.handler",
         "MemorySize": 128,
         "Role": {
           "Fn::GetAtt": [
             "LambdaRole",
             "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "Fn::If": [
+            "DoNotAttachToVpc",
+            {
+              "Ref": "AWS::NoValue"
+            },
+            {
+              "SecurityGroupIds": [
+                {
+                  "Ref": "DefaultSecurityGroup"
+                }
+              ],
+              "SubnetIds": {
+                "Ref": "PrivateSubnets"
+              }
+            }
           ]
         },
         "Runtime": "python2.7"
