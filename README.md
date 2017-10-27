@@ -75,7 +75,7 @@ If you need to access the consumer id in your cloudformation module, you can ref
 { "Fn::GetAtt": [ "KongConsumer", "id" ]}
 ```
 
-You can also add credentials with [Custom::KongCredentials](docs/KongCredentials.md) and ACLs with [Custom::KongACL](docs/KongACL.md) to the consumer.
+You can also add credentials with [Custom::KongCredential](docs/KongCredential.md) and ACLs with [Custom::KongACL](docs/KongACL.md) to the consumer.
 
 
 ## Installation
