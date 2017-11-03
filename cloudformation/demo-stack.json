@@ -35,7 +35,7 @@
       }
     },
     "KongConsumer": {
-      "Type": "Custom::KongACL",
+      "Type": "Custom::KongConsumer",
       "Properties": {
         "Consumer": {
           "username": "johndoe"
@@ -63,7 +63,21 @@
         "PluginName": "key-auth",
         "Credential": {
           "consumer_id": { "Fn::GetAtt":  [ "KongConsumer", "id" ] },
-          "key": "1231231231231231233123121"
+          "key": "66471684-6BDF-4F11-868F-B513CC391520"
+        },
+        "AdminURL": { "Ref": "AdminURL" },
+        "ServiceToken": { "Fn::Join": [ ":", [ "arn:aws:lambda", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "function:binxio-cfn-kong-provider" ]]}
+      }
+    },
+    "KongConsumerBasicAuth": {
+      "Type": "Custom::KongCredential",
+      "DependsOn": "KongConsumer",
+      "Properties": {
+        "PluginName": "basic-auth",
+        "Credential": {
+          "consumer_id": { "Fn::GetAtt":  [ "KongConsumer", "id" ] },
+          "username": "johndoe",
+          "password": "tiger"
         },
         "AdminURL": { "Ref": "AdminURL" },
         "ServiceToken": { "Fn::Join": [ ":", [ "arn:aws:lambda", { "Ref": "AWS::Region" }, { "Ref": "AWS::AccountId" }, "function:binxio-cfn-kong-provider" ]]}
