@@ -11,7 +11,9 @@ help:
 	@echo 'make test            - execute the tests, requires a working AWS connection.'
 	@echo 'make deploy-provider - deploys the provider.'
 	@echo 'make delete-provider - deletes the provider.'
-	@echo 'make demo            - deploys the provider and the demo cloudformation stack.'
+	@echo 'make kong            - deploys the kong cloudformation stack.'
+	@echo 'make delete-kong     - deletes the kong cloudformation stack.'
+	@echo 'make demo            - deploys the demo cloudformation stack.'
 	@echo 'make delete-demo     - deletes the demo cloudformation stack.'
 
 deploy:
@@ -85,21 +87,37 @@ deploy-provider:
 	aws cloudformation $(COMMAND)-stack \
 		--capabilities CAPABILITY_IAM \
 		--stack-name $(NAME) \
-		--template-body file://cloudformation/cfn-resource-provider.json ; \
+		--template-body file://cloudformation/cfn-resource-provider.json 
 	aws cloudformation wait stack-$(COMMAND)-complete  --stack-name $(NAME) 
 
 delete-provider:
 	aws cloudformation delete-stack --stack-name $(NAME)
 	aws cloudformation wait stack-delete-complete  --stack-name $(NAME)
 
+kong: COMMAND=$(shell if aws cloudformation get-template-summary --stack-name $(NAME)-kong >/dev/null 2>&1; then \
+			echo update; else echo create; fi)
+kong: KEY_EXISTS=$(shell aws --output text --query 'KeyPairs[*].KeyName' ec2 describe-key-pairs --key-name $(NAME)-kong 2>/dev/null)
+kong: 
+	@if [ -z "$(KEY_EXISTS)" ] ; then aws --output text --query KeyMaterial ec2 create-key-pair --key-name $(NAME)-kong > $(NAME)-kong.pem && chmod 0600 $(NAME)-kong.pem; else echo "key $(NAME)-kong exists" ; fi
+	aws cloudformation $(COMMAND)-stack \
+		--capabilities CAPABILITY_IAM \
+		--stack-name $(NAME)-kong \
+		--template-body file://cloudformation/kong.json \
+		--parameters ParameterKey=KongKeyName,ParameterValue=$(NAME)-kong 
+	aws cloudformation wait stack-$(COMMAND)-complete  --stack-name $(NAME)-kong
+
+delete-kong:
+	aws cloudformation delete-stack --stack-name $(NAME)-kong
+	aws cloudformation wait stack-delete-complete  --stack-name $(NAME)-kong
+
 demo: COMMAND=$(shell if aws cloudformation get-template-summary --stack-name $(NAME)-demo >/dev/null 2>&1 ; then echo update; else echo create; fi)
-demo: KEY_EXISTS=$(shell aws --output text --query 'KeyPairs[*].KeyName' ec2 describe-key-pairs --key-name $(NAME)-demo 2>/dev/null)
+demo: KONG_ADMIN_URL=$(shell aws --output text --query 'Stacks[*].Outputs[?OutputKey==`AdminURL`].OutputValue' cloudformation describe-stacks --stack-name $(NAME)-kong)
 demo:
-	@if [ -z "$(KEY_EXISTS)" ] ; then aws ec2 create-key-pair --key-name $(NAME)-demo ; else echo "key $(NAME)-demo exists" ; fi
 	aws cloudformation $(COMMAND)-stack --stack-name $(NAME)-demo \
 		--capabilities CAPABILITY_IAM \
 		--template-body file://cloudformation/demo-stack.json \
-		--parameters ParameterKey=KongKeyName,ParameterValue=$(NAME)-demo 
+		--parameters \
+			ParameterKey=AdminURL,ParameterValue=$(KONG_ADMIN_URL)
 	aws cloudformation wait stack-$(COMMAND)-complete  --stack-name $(NAME)-demo
 
 delete-demo:
