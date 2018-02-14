@@ -5,16 +5,24 @@ import requests
 import StringIO
 import subprocess
 from kong import handler
+from test_cfn_kong_api_provider import Request as ApiRequest
 
 
 def clean_plugins():
     request = Request('Create', {})
-    url = '%s/plugins?name=datadog' % request.admin_url
+    url = '%s/plugins' % request.admin_url
     response = requests.get(url)
     if response.status_code == 200:
         plugins = response.json()['data']
         for plugin in plugins:
             response = requests.delete('%s/plugins/%s' % (request.admin_url, plugin['id']))
+
+    url = '%s/apis' % request.admin_url
+    response = requests.get(url)
+    if response.status_code == 200:
+        plugins = response.json()['data']
+        for plugin in plugins:
+            response = requests.delete('%s/apis/%s' % (request.admin_url, plugin['id']))
 
 
 def test_create():
@@ -32,6 +40,35 @@ def test_create():
     assert failed_response['Status'] == 'FAILED', response['Reason']
 
     url = '%s/plugins/%s' % (request.admin_url, physical_resource_id)
+    response = requests.get(url)
+    assert response.status_code == 200, 'url %s, return %s' % (url, response.text)
+
+    request = Request('Delete', plugin, physical_resource_id)
+    response = handler(request, {})
+    assert response['Status'] == 'SUCCESS', response['Reason']
+
+    url = '%s/plugins/%s' % (request.admin_url, physical_resource_id)
+    response = requests.get(url)
+    assert response.status_code == 404, 'url %s, return %s' % (url, response.text)
+
+
+def test_create_on_api():
+    clean_plugins()
+
+    api = {'name': 'api-%s' % uuid.uuid4(),  'uris': ['/headers'], 'upstream_url': 'https://httpbin.org/headers'}
+    request = ApiRequest('Create', api)
+    response = handler(request, {})
+    assert response['Status'] == 'SUCCESS', response['Reason']
+    api_id = response['PhysicalResourceId']
+
+    plugin = {'name': 'http-log', 'api_id': api_id, 'config': {'http_endpoint': 'http://log-forwarder:4443'}}
+    request = Request('Create', plugin)
+    response = handler(request, {})
+    assert response['Status'] == 'SUCCESS', response['Reason']
+    assert 'PhysicalResourceId' in response
+    physical_resource_id = response['PhysicalResourceId']
+
+    url = '%s/apis/%s/plugins/%s' % (request.admin_url, api_id, physical_resource_id)
     response = requests.get(url)
     assert response.status_code == 200, 'url %s, return %s' % (url, response.text)
 

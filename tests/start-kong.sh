@@ -4,7 +4,7 @@ if curl -sS -o /dev/null localhost:8000 && curl -sS -o /dev/null localhost:8001/
 	exit 0
 fi
 
-KONG_VERSION=0.11.0
+KONG_VERSION=0.11.2
 docker pull postgres:9.6
 docker pull kong:$KONG_VERSION
 
