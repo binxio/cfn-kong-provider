@@ -85,12 +85,12 @@ To install these custom resources, type:
 aws cloudformation create-stack \
 	--capabilities CAPABILITY_IAM \
 	--stack-name cfn-kong-provider \
-	--template-body file://cloudformation/cfn-resource-provider.json 
+	--template-body file://cloudformation/cfn-resource-provider.yaml
 
 aws cloudformation wait stack-create-complete  --stack-name cfn-kong-provider 
 ```
 
-This CloudFormation template will use our pre-packaged provider from `s3://binxio-public/lambdas/cfn-kong-provider-latest.zip`.
+This CloudFormation template will use our pre-packaged provider from `s3://binxio-public-${AWS_REGION}/lambdas/cfn-kong-provider-latest.zip`.
 
 
 ## Demo
@@ -99,7 +99,7 @@ For the demo to work, we need a deployed Kong API Gateway that is accessible fro
 
 ```sh
 aws cloudformation create-stack --stack-name kong-environment \
-	--template-body file://cloudformation/kong.json \
+	--template-body file://cloudformation/kong.yaml \
 	--parameters ParameterKey=KongKeyName,ParameterValue=#insert-your-key-name-here#
 
 aws cloudformation wait stack-create-complete  --stack-name kong-environment
@@ -112,7 +112,7 @@ afterwards.
 
 ```sh
 aws cloudformation create-stack --stack-name cfn-kong-provider-demo \
-	--template-body file://cloudformation/demo-stack.json \
+	--template-body file://cloudformation/demo-stack.yaml \
 	--parameters ParameterKey=AdminURL,ParameterValue=$ADMIN_URL
 
 aws cloudformation wait stack-create-complete  --stack-name cfn-kong-provider-demo
