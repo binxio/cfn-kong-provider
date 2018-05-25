@@ -13,7 +13,7 @@ Parameters:
   LambdaS3Bucket:
     Type: String
     Default: ''
-  CFNKongProviderZipFileName:
+  CFNCustomProviderZipFileName:
     Type: String
     Default: lambdas/cfn-kong-provider-0.4.0.zip
 Conditions:
@@ -74,7 +74,7 @@ Resources:
           - UsePublicBucket
           - !Sub 'binxio-public-${AWS::Region}'
           - !Ref 'LambdaS3Bucket'
-        S3Key: !Ref 'CFNKongProviderZipFileName'
+        S3Key: !Ref 'CFNCustomProviderZipFileName'
       FunctionName: binxio-cfn-kong-provider
       Handler: kong.handler
       MemorySize: 128
