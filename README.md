@@ -99,6 +99,7 @@ For the demo to work, we need a deployed Kong API Gateway that is accessible fro
 
 ```sh
 aws cloudformation create-stack --stack-name kong-environment \
+	--capabilities CAPABILITY_IAM \
 	--template-body file://cloudformation/kong.yaml \
 	--parameters ParameterKey=KongKeyName,ParameterValue=#insert-your-key-name-here#
 
