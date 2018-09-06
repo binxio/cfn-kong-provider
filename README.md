@@ -16,9 +16,21 @@ It is quite easy: you specify a CloudFormation resource of type [Custom::KongSer
 
       AdminURL: !Ref 'AdminURL'
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-kong-provider'
+
+  HeaderRoute:
+    Type: Custom::KongRoute
+    Properties:
+      Route:
+        paths:
+          - /headers
+        service: 
+          id: !Ref 'HeaderService'
+      AdminURL: !Ref 'AdminURL'
+      ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-kong-provider'
 ```
 
 The `Service` object takes all properties as defined by [add-service](https://getkong.org/docs/0.13.x/admin-api/#add-service) except `url`.
+The `Route` object takes all properties as defined by [add-route](https://getkong.org/docs/0.13.x/admin-api/#add-route).
 
 
 ## How do I add a Plugin?
