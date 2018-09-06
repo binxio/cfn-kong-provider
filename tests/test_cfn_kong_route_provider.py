@@ -24,7 +24,7 @@ def test_create():
     response = requests.get(url)
     assert response.status_code == 200, 'url %s, return %s' % (url, response.text)
     rt = response.json()
-    assert cmp(rt['paths'], route['paths']) == 0
+    assert rt['paths'] == route['paths']
 
     request = Request('Delete', route, physical_resource_id)
     response = handler(request, {})
@@ -54,7 +54,7 @@ def test_update():
     response = requests.get(url)
     assert response.status_code == 200, 'url %s, return %s' % (url, response.text)
     rt = response.json()
-    assert cmp(route2['paths'], rt['paths']) == 0
+    assert route2['paths'] == rt['paths']
 
     request = Request('Delete', route2, physical_resource_id)
     response = handler(request, {})

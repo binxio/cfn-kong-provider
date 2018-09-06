@@ -11,18 +11,19 @@ from kong import handler
 
 
 def test_with_jwt():
-    name = 'api-%s' % uuid.uuid4()
-    admin_url, jwt_config = create_secure_admin_api(name)
+    name = 'service-%s' % uuid.uuid4()
+    admin_url, jwt_config = create_secure_admin_service(name)
 
-    # create api without JWT
-    api = {'name': 'api-%s' % uuid.uuid4(),  'uris': ['/headers'], 'upstream_url': 'https://httpbin.org/headers'}
-    request = Request('Create', api)
+    # create service without JWT
+    service = {'name': 'service-%s' % uuid.uuid4(), 'host': 'localhost'}
+    request = Request('Create', service)
     request.admin_url = admin_url
     response = handler(request, {})
     assert response['Status'] == 'FAILED', response['Reason']
+    assert 'Unauthorized' in response['Reason']
 
-    # create api with JWT
-    request = Request('Create', api)
+    # create service with JWT
+    request = Request('Create', service)
     request['ResourceProperties']['JWT'] = jwt_config
     request.admin_url = admin_url
     response = handler(request, {})
@@ -30,68 +31,72 @@ def test_with_jwt():
     physical_resource_id = response['PhysicalResourceId']
 
     # check create
-    url = 'http://localhost:8001/apis/%s' % physical_resource_id
-    api_response = requests.get(url)
-    assert api_response.status_code == 200, url
-    assert api_response.json()['name'] == api['name']
+    url = 'http://localhost:8001/services/%s' % physical_resource_id
+    service_response = requests.get(url)
+    assert service_response.status_code == 200, url
+    assert service_response.json()['name'] == service['name']
 
     # update the JWT token
-    api['retries'] = 100
-    request = Request('Update', api, physical_resource_id)
+    service['retries'] = 100
+    request = Request('Update', service, physical_resource_id)
     request.admin_url = admin_url
     request['ResourceProperties']['JWT'] = jwt_config
     response = handler(request, {})
     assert response['Status'] == 'SUCCESS', response['Reason']
 
     # check update
-    url = 'http://localhost:8001/apis/%s' % physical_resource_id
-    api_response = requests.get(url)
-    assert api_response.status_code == 200
-    assert api_response.json()['retries'] == 100
+    url = 'http://localhost:8001/services/%s' % physical_resource_id
+    service_response = requests.get(url)
+    assert service_response.status_code == 200
+    assert service_response.json()['retries'] == 100
 
-    # delete the API
-    request = Request('Delete', api, physical_resource_id)
+    # delete the Service
+    request = Request('Delete', service, physical_resource_id)
     request['ResourceProperties']['JWT'] = jwt_config
     response = handler(request, {})
     assert response['Status'] == 'SUCCESS', response['Reason']
 
     # check delete
-    url = 'http://localhost:8001/apis/%s' % physical_resource_id
-    api_response = requests.get(url)
-    assert api_response.status_code == 404
+    url = 'http://localhost:8001/services/%s' % physical_resource_id
+    service_response = requests.get(url)
+    assert service_response.status_code == 404
 
     # check bad private key
-    request = Request('Create', api)
+    request = Request('Create', service)
     request['ResourceProperties']['JWT'] = {'Issuer': 'Admin', 'PrivateKeyParameterName': 'does-not-exist'}
     response = handler(request, {})
     assert response['Status'] == 'FAILED', response['Reason']
     assert response['Reason'].startswith('could not get private key')
 
     # check bad AdminURL
-    request = Request('Create', api)
+    request = Request('Create', service)
     request['ResourceProperties']['AdminURL'] = 'http://does-not-resolve-does-it'
     response = handler(request, {})
     assert response['Status'] == 'FAILED', response['Reason']
 
-    remove_secure_admin_api(name, jwt_config)
+    remove_secure_admin_service(name, jwt_config)
 
 
-def create_secure_admin_api(name):
+def create_secure_admin_service(name):
     private_key, public_key = create_key_pair()
 
     ssm = boto3.client('ssm')
     private_key_parameter_name = '/private-key/%s' % name
     ssm.put_parameter(Name=private_key_parameter_name, Type='SecureString', Value=private_key)
 
-    # create admin api
-    api = {'name': name,  'uris': ['/admin/%s' % name], 'upstream_url': 'http://localhost:8001', 'strip_uri': 'true'}
-    api_response = requests.post('http://localhost:8001/apis', json=api)
-    assert api_response.status_code == 201
-    physical_resource_id = api_response.json()['id']
+    # create admin service
+    service = {'name': name,  'protocol': 'http', 'host': 'localhost', 'port': 8001}
+    service_response = requests.post('http://localhost:8001/services', json=service)
+    assert service_response.status_code == 201, service_response.text
+    service_id = physical_resource_id = service_response.json()['id']
+
+    route = {'paths': ['/admin/%s' % name], 'service': { 'id': service_id}}
+    route_response = requests.post('http://localhost:8001/routes', json=route)
+    assert route_response.status_code == 201, route_response.text
 
     # add jwt plugin
-    url = 'http://localhost:8001/apis/%s/plugins' % physical_resource_id
-    plugin_response = requests.post(url, json={'name': 'jwt'})
+    plugin = {'name': 'jwt', 'service_id': service_id}
+    plugin_response = requests.post('http://localhost:8001/plugins', json=plugin)
     assert plugin_response.status_code == 201 or plugin_response.status_code == 200
 
     # create consumer
@@ -106,15 +111,21 @@ def create_secure_admin_api(name):
     return 'http://localhost:8000/admin/%s' % name, {'Issuer': name, 'PrivateKeyParameterName': private_key_parameter_name}
 
 
-def remove_secure_admin_api(name, jwt_config):
-    # cleanup api and consumer and parameter.
-    url = 'http://localhost:8001/apis/%s' % name
-    api_response = requests.delete(url)
-    assert api_response.status_code == 204
+def remove_secure_admin_service(name, jwt_config):
+    # cleanup service and consumer and parameter.
+    url = 'http://localhost:8001/services/%s' % name
+
+    routes = requests.get('%s/routes' % url).json()
+    for route_id in map(lambda r: r['id'], routes['data']):
+        route_response = requests.delete('http://localhost:8001/routes/%s' % route_id)
+        assert route_response.status_code == 204, route_response.text
+
+    service_response = requests.delete(url)
+    assert service_response.status_code == 204, service_response.text
 
     url = 'http://localhost:8001/consumers/%s' % name
-    api_response = requests.delete(url)
-    assert api_response.status_code == 204
+    service_response = requests.delete(url)
+    assert service_response.status_code == 204
 
     ssm = boto3.client('ssm')
     ssm.delete_parameter(Name=jwt_config['PrivateKeyParameterName'])
@@ -126,15 +137,15 @@ def create_key_pair():
         public_exponent=65537,
         key_size=2048
     )
-    private_key = key.private_bytes(
+    private_bytes = key.private_bytes(
         crypto_serialization.Encoding.PEM,
         crypto_serialization.PrivateFormat.PKCS8,
         crypto_serialization.NoEncryption())
+    private_key = private_bytes.decode('ascii')
 
     p = subprocess.Popen(["openssl", "rsa", "-inform", "PEM", "-pubout"], stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
-    out, err = p.communicate(private_key)
-    public_key = out.decode()
+    public_key, err = p.communicate(private_key)
     return (private_key, public_key)
 
 
@@ -157,25 +168,25 @@ class Request(dict):
         self['ResourceProperties']['JWT'] = jwt
 
     @property
-    def api(self):
-        return self['ResourceProperties']['API'] if 'API' in self['ResourceProperties'] else None
+    def service(self):
+        return self['ResourceProperties']['Service'] if 'Service' in self['ResourceProperties'] else None
 
-    @api.setter
-    def api(self, api):
-        self['ResourceProperties']['API'] = api
+    @service.setter
+    def service(self, service):
+        self['ResourceProperties']['Service'] = service
 
-    def __init__(self, request_type, api, physical_resource_id=None):
+    def __init__(self, request_type, service, physical_resource_id=None):
         request_id = 'request-%s' % uuid.uuid4()
         self.update({
             'RequestType': request_type,
             'ResponseURL': 'https://httpbin.org/put',
             'StackId': 'arn:aws:cloudformation:us-west-2:EXAMPLE/stack-name/guid',
             'RequestId': request_id,
-            'ResourceType': 'Custom::KongAPI',
-            'LogicalResourceId': 'MyApi',
+            'ResourceType': 'Custom::KongService',
+            'LogicalResourceId': 'MyService',
             'ResourceProperties': {
                 'AdminURL': 'http://localhost:8001',
-                'API': api
+                'Service': service
             }})
 
         self['PhysicalResourceId'] = physical_resource_id if physical_resource_id is not None else 'initial-%s' % str(uuid.uuid4())

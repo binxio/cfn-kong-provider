@@ -69,7 +69,8 @@ def test_update():
     response = requests.get(url)
     assert response.status_code == 200, 'url %s, return %s' % (url, response.text)
     svc = response.json()
-    assert cmp(service2, svc)
+    for k in service2:
+        assert service2[k] == svc[k]
 
     request = Request('Delete', service2, physical_resource_id)
     response = handler(request, {})
