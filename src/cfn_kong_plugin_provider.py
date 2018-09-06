@@ -32,6 +32,12 @@ request_schema = {
                 "consumer_id": {
                     "type": "string"
                 },
+                "service_id": {
+                    "type": "string"
+                },
+                "route_id": {
+                    "type": "string"
+                },
                 "api_id": {
                     "type": "string"
                 },

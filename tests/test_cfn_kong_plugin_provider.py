@@ -1,11 +1,9 @@
-import boto3
-import sys
 import uuid
+
 import requests
-import StringIO
-import subprocess
+
 from kong import handler
-from test_cfn_kong_api_provider import Request as ApiRequest
+from test_cfn_kong_service_provider import Request as ServiceRequest
 
 
 def clean_plugins():
@@ -17,12 +15,12 @@ def clean_plugins():
         for plugin in plugins:
             response = requests.delete('%s/plugins/%s' % (request.admin_url, plugin['id']))
 
-    url = '%s/apis' % request.admin_url
+    url = '%s/services' % request.admin_url
     response = requests.get(url)
     if response.status_code == 200:
         plugins = response.json()['data']
         for plugin in plugins:
-            response = requests.delete('%s/apis/%s' % (request.admin_url, plugin['id']))
+            response = requests.delete('%s/services/%s' % (request.admin_url, plugin['id']))
 
 
 def test_create():
@@ -52,23 +50,23 @@ def test_create():
     assert response.status_code == 404, 'url %s, return %s' % (url, response.text)
 
 
-def test_create_on_api():
+def test_create_on_service():
     clean_plugins()
 
-    api = {'name': 'api-%s' % uuid.uuid4(),  'uris': ['/headers'], 'upstream_url': 'https://httpbin.org/headers'}
-    request = ApiRequest('Create', api)
+    service = {'name': 'service-%s' % uuid.uuid4(),  'host': 'localhost'}
+    request = ServiceRequest('Create', service)
     response = handler(request, {})
     assert response['Status'] == 'SUCCESS', response['Reason']
-    api_id = response['PhysicalResourceId']
+    service_id = response['PhysicalResourceId']
 
-    plugin = {'name': 'http-log', 'api_id': api_id, 'config': {'http_endpoint': 'http://log-forwarder:4443'}}
+    plugin = {'name': 'http-log', 'service_id': service_id, 'config': {'http_endpoint': 'http://log-forwarder:4443'}}
     request = Request('Create', plugin)
     response = handler(request, {})
     assert response['Status'] == 'SUCCESS', response['Reason']
     assert 'PhysicalResourceId' in response
     physical_resource_id = response['PhysicalResourceId']
 
-    url = '%s/apis/%s/plugins/%s' % (request.admin_url, api_id, physical_resource_id)
+    url = '%s/plugins?service_id=%s&id=%s' % (request.admin_url, service_id, physical_resource_id)
     response = requests.get(url)
     assert response.status_code == 200, 'url %s, return %s' % (url, response.text)
 
