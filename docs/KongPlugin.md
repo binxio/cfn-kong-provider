@@ -18,6 +18,8 @@ To declare this entity in your AWS CloudFormation template, use the following sy
       "name": String,
       "api_id": String,
       "consumer_id": String,
+      "service_id": String,
+      "route_id": String,
       "config": {
          ...
       }
