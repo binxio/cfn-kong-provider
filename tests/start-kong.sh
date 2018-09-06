@@ -4,7 +4,7 @@ if curl -sS -o /dev/null localhost:8000 && curl -sS -o /dev/null localhost:8001/
 	exit 0
 fi
 
-KONG_VERSION=0.11.2
+KONG_VERSION=0.13
 docker pull postgres:9.6
 docker pull kong:$KONG_VERSION
 
@@ -36,6 +36,8 @@ KONG_ID=$(docker run -d \
     -e KONG_DATABASE=postgres \
     -e KONG_PG_HOST=kong-database \
     -e KONG_CASSANDRA_CONTACT_POINTS=kong-database \
+    -e KONG_ADMIN_LISTEN=0.0.0.0:8001 \
+    -e KONG_ADMIN_LISTEN_SSL=0.0.0.0:8444 \
     -p 8000:8000 \
     -p 8001:8001 \
     kong:$KONG_VERSION kong start --vv)
