@@ -29,7 +29,7 @@ def test_create():
     assert 60000 == svc['connect_timeout']
     assert 60000 == svc['read_timeout']
     assert 60000 == svc['write_timeout']
-    assert svc['path'] is None
+    assert 'path' not in svc or svc['path'] is None
 
     request = Request('Delete', service, physical_resource_id)
     response = handler(request, {})
