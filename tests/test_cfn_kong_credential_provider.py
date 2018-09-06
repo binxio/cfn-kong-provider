@@ -1,9 +1,7 @@
-import boto3
-import sys
 import uuid
+
 import requests
-import StringIO
-import subprocess
+
 from kong import handler
 
 
