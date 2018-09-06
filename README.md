@@ -1,6 +1,7 @@
 # cfn-kong-provider
 A collection of CloudFormation custom providers for managing KONG API Gateway resources
 
+
 ## How do I add an Kong Service?
 It is quite easy: you specify a CloudFormation resource of type [Custom::KongService](docs/KongService.md) and a [Custom::KongRoute](docs/KongRoute.md):
 
@@ -105,3 +106,6 @@ curl $ADMIN_URL/consumers/johndoe/acls
 curl $ADMIN_URL/consumers/johndoe/basic-auth
 curl $ADMIN_URL/consumers/johndoe/key-auth
 ```
+
+## Note
+As of version 0.5.0 we added support for Kong `service` and `route` API objects and deprecated support for the Kong `api` API object. 
