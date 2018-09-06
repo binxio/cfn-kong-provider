@@ -4,7 +4,7 @@ if curl -sS -o /dev/null localhost:8000 && curl -sS -o /dev/null localhost:8001/
 	exit 0
 fi
 
-KONG_VERSION=0.13
+KONG_VERSION=0.14
 docker pull postgres:9.6
 docker pull kong:$KONG_VERSION
 
@@ -16,7 +16,7 @@ KONG_DB=$(docker run -d \
 
 
 echo 'waiting for postgres.'
-while ! docker exec -i -e PGPASSWORD=kong $KONG_DB psql --host localhost --user kong < /dev/null > /dev/null 2>&1; do
+while ! docker exec -e PGPASSWORD=kong $KONG_DB psql --host localhost --user kong < /dev/null > /dev/null 2>&1; do
 	echo -n '.'
 	sleep 1
 	[[ $C -gt 30 ]] && echo && echo "ERROR: failed to start postgres" && exit 1
