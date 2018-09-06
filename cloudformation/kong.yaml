@@ -63,7 +63,7 @@ Parameters:
     Type: String
     MinLength: '8'
   DBClass:
-    Default: db.m4.large
+    Default: db.t2.small
     Description: Database instance class
     Type: String
     AllowedValues:
@@ -114,13 +114,10 @@ Parameters:
   DBVersion:
     Description: Postgres version
     Type: String
-    Default: 9.4.7
+    Default: 9.6.8
     AllowedValues:
-      - 9.5.2
-      - 9.4.7
-      - 9.4.5
-      - 9.4.4
-      - 9.4.1
+      - 9.6.8
+      - 9.5.12
   DBSnapshotIdentifier:
     Description: Optional- The RDS snapshot name to restore to the new DB instance.
     Type: String
@@ -170,7 +167,7 @@ Parameters:
     Description: Required- Name of an existing EC2 KeyPair to enable SSH access to
       the instances for Kong
     Type: AWS::EC2::KeyPair::KeyName
-    Default: demo-stack
+    Default: ''
   KongFleetMaxSize:
     Description: Max Number of Kong instances
     Type: Number
@@ -185,7 +182,7 @@ Parameters:
     Description: 'Kong EC2 instance type. Note: T2 instance is not supported on the
       EC2-Classic platform'
     Type: String
-    Default: c3.2xlarge
+    Default: t2.large
     AllowedValues:
       - t2.small
       - t2.micro
@@ -218,7 +215,7 @@ Parameters:
       - r3.8xlarge
     ConstraintDescription: must be a valid EC2 instance type.
   KongVersion:
-    Description: Kong version (Only 0.11.x and above supported). Leave it blank to
+    Description: Kong version (Only 0.13.x and above supported). Leave it blank to
       install latest version.
     Type: String
     Default: ''
@@ -233,37 +230,29 @@ Parameters:
     Description: Kong configuration
     Type: CommaDelimitedList
     ConstraintDescription: must be in KONG_ENV1=v1[, KONG_ENV2=v2] format
-    Default: KONG_ENV1=v1
+    Default: ''
 Mappings:
   RegionKongAmiMap:
-    ap-south-1:
-      HVM: ami-47205e28
-    eu-west-2:
-      HVM: ami-ed100689
-    eu-west-1:
-      HVM: ami-d7b9a2b1
-    ap-northeast-2:
-      HVM: ami-e21cc38c
-    ap-northeast-1:
-      HVM: ami-3bd3c45c
-    sa-east-1:
-      HVM: ami-87dab1eb
-    ca-central-1:
-      HVM: ami-a7aa15c3
-    ap-southeast-1:
-      HVM: ami-77af2014
-    ap-southeast-2:
-      HVM: ami-10918173
-    eu-central-1:
-      HVM: ami-82be18ed
     us-east-1:
-      HVM: ami-29550952
+      HVM: ami-a4c7edb2
     us-east-2:
       HVM: ami-8a7859ef
     us-west-1:
       HVM: ami-327f5352
     us-west-2:
       HVM: ami-6df1e514
+    eu-west-1:
+      HVM: ami-d7b9a2b1
+    eu-west-2:
+      HVM: ami-ed100689
+    eu-central-1:
+      HVM: ami-0dea4adc94d997fbe
+    ap-southeast-1:
+      HVM: ami-77af2014
+    ap-southeast-2:
+      HVM: ami-10918173
+    sa-east-1:
+      HVM: ami-87dab1eb
 Conditions:
   CreateRDS: !Equals
     - !Ref 'DBHost'
@@ -451,6 +440,10 @@ Resources:
           CidrIp: 0.0.0.0/0
   KongScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
+    CreationPolicy:
+      ResourceSignal:
+        Count: !Ref 'KongFleetDesiredSize'
+        Timeout: PT15M
     Properties:
       AvailabilityZones: !If
         - CreateVpcResources
@@ -531,8 +524,9 @@ Resources:
             KONG_ENV=\"${Param1}\"\nexport $KONG_ENV\nexport KONG_DATABASE=postgres\n\
             export KONG_PG_HOST=${Param2}\nexport KONG_PG_PORT=${Param3}\nexport KONG_PG_USER=${DBUsername}\n\
             export KONG_PG_DATABASE=${DBName}\nexport KONG_PG_PASSWORD=${DBPassword}\n\
-            echo \"[kong] installing Kong with following environments:\" \nenv\nmkdir\
-            \ /usr/local/kong && chown ec2-user /usr/local/kong \nwget https://bintray.com/kong/kong-community-edition-aws/rpm\
+            export KONG_ADMIN_LISTEN='0.0.0.0:8001, 0.0.0.0:8444 ssl'\necho \"[kong]\
+            \ installing Kong with following environments:\" \nenv\nmkdir /usr/local/kong\
+            \ && chown ec2-user /usr/local/kong \nwget https://bintray.com/kong/kong-community-edition-aws/rpm\
             \ -O bintray-kong-kong-community-edition-aws.repo\nif [ \"$?\" -ne \"\
             0\" ]\nthen\n   /opt/aws/bin/cfn-signal -e 1 --stack ${AWS::StackName}\
             \ --resource KongScalingGroup  --region ${AWS::Region} --reason \"failed\

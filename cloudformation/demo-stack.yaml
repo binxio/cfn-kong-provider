@@ -5,23 +5,31 @@ Parameters:
     Type: String
     Description: 'the Kong admin URL, must be reachable from the Lambda '
 Resources:
-  HeaderAPI:
-    Type: Custom::KongAPI
+  HeaderService:
+    Type: Custom::KongService
     Properties:
-      API:
-        name: header-api
-        uris:
+      Service:
+        name: header-service
+        host: httpbin.org
+        protocol: https
+      AdminURL: !Ref 'AdminURL'
+      ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-kong-provider'
+  HeaderRoute:
+    Type: Custom::KongRoute
+    Properties:
+      Route:
+        paths:
           - /headers
-        upstream_url: https://httpbin.org
+        service: 
+          id: !Ref 'HeaderService'
       AdminURL: !Ref 'AdminURL'
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-kong-provider'
   KeyAuthPlugin:
     Type: Custom::KongPlugin
-    DependsOn: HeaderAPI
     Properties:
       Plugin:
         name: key-auth
-        api_id: !GetAtt 'HeaderAPI.id'
+        service_id: !Ref 'HeaderService'
       AdminURL: !Ref 'AdminURL'
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-kong-provider'
   KongConsumer:
@@ -36,7 +44,7 @@ Resources:
     DependsOn: KongConsumer
     Properties:
       ACL:
-        consumer_id: !GetAtt 'KongConsumer.id'
+        consumer_id: !Ref 'KongConsumer'
         group: admin
       AdminURL: !Ref 'AdminURL'
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-kong-provider'
@@ -46,7 +54,7 @@ Resources:
     Properties:
       PluginName: key-auth
       Credential:
-        consumer_id: !GetAtt 'KongConsumer.id'
+        consumer_id: !Ref 'KongConsumer'
         key: 66471684-6BDF-4F11-868F-B513CC391520
       AdminURL: !Ref 'AdminURL'
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-kong-provider'
@@ -56,7 +64,7 @@ Resources:
     Properties:
       PluginName: basic-auth
       Credential:
-        consumer_id: !GetAtt 'KongConsumer.id'
+        consumer_id: !Ref 'KongConsumer'
         username: johndoe
         password: tiger
       AdminURL: !Ref 'AdminURL'
