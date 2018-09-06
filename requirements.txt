@@ -2,3 +2,4 @@ boto3
 cfn_resource_provider
 jwt_generator
 cryptography
+requests
