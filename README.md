@@ -84,6 +84,7 @@ aws cloudformation wait stack-create-complete  --stack-name kong-environment
 
 ADMIN_URL=$(aws --output text --query 'Stacks[*].Outputs[?OutputKey==`AdminURL`].OutputValue' \
 		cloudformation describe-stacks --stack-name kong-environment)
+export ADMIN_URL
 ```
 Note that it will create an entire Kong setup, including a VPC, loadbalancers and a Postgres Database. Do not forget to clean up
 afterwards.
@@ -97,8 +98,8 @@ aws cloudformation wait stack-create-complete  --stack-name cfn-kong-provider-de
 ```
 To validate the result, type:
 ```
-curl $ADMIN_URL/apis/header-api
-curl $ADMIN_URL/apis/header-api/plugins
+curl $ADMIN_URL/services/header-service
+curl $ADMIN_URL/services/header-service/plugins
 curl $ADMIN_URL/consumers/johndoe
 curl $ADMIN_URL/consumers/johndoe/acls
 curl $ADMIN_URL/consumers/johndoe/basic-auth
