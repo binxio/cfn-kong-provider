@@ -109,7 +109,8 @@ demo:
 	COMMAND=$(shell if aws cloudformation get-template-summary --stack-name $(NAME)-demo >/dev/null 2>&1; then \
 			echo update; else echo create; fi) ; \
 	aws cloudformation $$COMMAND-stack --stack-name $(NAME)-demo \
-		--template-body file://cloudformation/demo-stack.yaml --capabilities CAPABILITY_NAMED_IAM;\
+		--template-body file://cloudformation/demo-stack.yaml --capabilities CAPABILITY_NAMED_IAM \
+		--parameters ParameterKey=AdminURL,ParameterValue=$(ADMIN_URL);\
 	aws cloudformation wait stack-$$COMMAND-complete  --stack-name $(NAME)-demo
 
 delete-demo:
