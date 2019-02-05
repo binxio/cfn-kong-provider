@@ -1,5 +1,5 @@
 boto3
-cfn_resource_provider
+cfn_resource_provider>=1.0.1
 jwt_generator
 cryptography
 requests
