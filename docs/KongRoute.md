@@ -27,7 +27,7 @@ You can specify the following properties:
     "JWT" - RS256 JWT token generator configuration (optional)
     "JWT.Issuer" - issuer of the JWT token, defaults to 'admin'.
     "JWT.PrivateKeyParameterName" - parameter store name containing the private key to sign the token with (required)
-    "RouteToken" - pointing to the function implementing this resource (required)
+    "ServiceToken" - pointing to the function implementing this resource (required)
     "Route" - object containing all the properties as defined by Kong add-route, except `url` (required).
 
 Check out all properties for "Route" at [add-route](https://getkong.org/docs/0.13.x/admin-api/#add-route).
