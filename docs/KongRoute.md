@@ -5,19 +5,14 @@ The `Custom::KongRoute` creates a Kong Route
 To declare this entity in your AWS CloudFormation template, use the following syntax:
 
 ```json
-{
-  "Type" : "Custom::KongRoute",
-  "Properties" : {
-    "AdminUrl": String,
-    "JWT": {
-        "Issuer": String,
-        "PrivateKeyParameterName": String
-    },
-    "RouteToken" : String,
-    "Route" : {
-    }
-  }
-}
+Type: Custom::KongRoute
+Properties:
+  AdminUrl: String
+  JWT:
+    Issuer: String
+    PrivateKeyParameterName: String
+  ServiceToken: String
+  Route: {}
 ```
 
 ## Properties

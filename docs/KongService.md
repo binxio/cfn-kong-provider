@@ -5,19 +5,14 @@ The `Custom::KongService` creates a Kong Service
 To declare this entity in your AWS CloudFormation template, use the following syntax:
 
 ```json
-{
-  "Type" : "Custom::KongService",
-  "Properties" : {
-    "AdminUrl": String,
-    "JWT": {
-        "Issuer": String,
-        "PrivateKeyParameterName": String
-    },
-    "ServiceToken" : String,
-    "Service" : {
-    }
-  }
-}
+Type: Custom::KongService
+Properties:
+  AdminUrl: String
+  JWT:
+    Issuer: String
+    PrivateKeyParameterName: String
+  ServiceToken: String
+  Service: {}
 ```
 
 ## Properties

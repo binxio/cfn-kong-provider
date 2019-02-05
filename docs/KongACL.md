@@ -4,22 +4,17 @@ The `Custom::KongACL` creates a Kong ACL .
 ## Syntax
 To declare this entity in your AWS CloudFormation template, use the following syntax:
 
-```json
-{
-  "Type" : "Custom::KongACL",
-  "Properties" : {
-    "AdminUrl": String,
-    "JWT": {
-        "Issuer": String,
-        "PrivateKeyParameterName": String
-    },
-    "ServiceToken" : String,
-    "ACL" : {
-      "consumer_id": String,
-      "group": String
-    }
-  }
-}
+```yaml
+Type: Custom::KongACL
+Properties:
+  AdminUrl: String
+  JWT:
+    Issuer: String
+    PrivateKeyParameterName: String
+  ServiceToken: String
+  ACL:
+    consumer_id: String
+    group: String
 ```
 
 ## Properties

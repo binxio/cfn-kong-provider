@@ -4,30 +4,25 @@ The `Custom::KongAPI` creates a Kong API.
 ## Syntax
 To declare this entity in your AWS CloudFormation template, use the following syntax:
 
-```json
-{
-  "Type" : "Custom::KongAPI",
-  "Properties" : {
-    "AdminUrl": String,
-    "JWT": {
-        "Issuer": String,
-        "PrivateKeyParameterName": String
-    },
-    "ServiceToken" : String,
-    "API" : {
-      "name": String,
-      "http_if_terminated": true,
-      "https_only": false,
-      "preserve_host": false,
-      "retries": 5,
-      "strip_uri": true,
-      "upstream_connect_timeout": 60000,
-      "upstream_read_timeout": 60000,
-      "upstream_send_timeout": 60000,
-      "upstream_url": "http://httpbin.org"
-    }
-  }
-}
+```jsonyaml
+Type: Custom::KongAPI
+Properties:
+  AdminUrl: String
+  JWT:
+    Issuer: String
+    PrivateKeyParameterName: String
+  ServiceToken: String
+  API:
+    name: String
+    http_if_terminated: true
+    https_only: false
+    preserve_host: false
+    retries: 5
+    strip_uri: true
+    upstream_connect_timeout: 60000
+    upstream_read_timeout: 60000
+    upstream_send_timeout: 60000
+    upstream_url: http://httpbin.org
 ```
 
 ## Properties

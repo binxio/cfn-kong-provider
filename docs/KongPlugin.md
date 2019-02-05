@@ -4,28 +4,22 @@ The `Custom::KongPlugin` creates a Kong Plugin .
 ## Syntax
 To declare this entity in your AWS CloudFormation template, use the following syntax:
 
-```json
-{
-  "Type" : "Custom::KongPlugin",
-  "Properties" : {
-    "AdminUrl": String,
-    "JWT": {
-        "Issuer": String,
-        "PrivateKeyParameterName": String
-    },
-    "ServiceToken" : String,
-    "Plugin" : {
-      "name": String,
-      "api_id": String,
-      "consumer_id": String,
-      "service_id": String,
-      "route_id": String,
-      "config": {
-         ...
-      }
-    }
-  }
-}
+```yaml
+Type: Custom::KongPlugin
+Properties:
+  AdminUrl: String
+  JWT:
+    Issuer: String
+    PrivateKeyParameterName: String
+  ServiceToken: String
+  Plugin:
+    name: String
+    api_id: String
+    consumer_id: String
+    service_id: String
+    route_id: String
+    config:
+      ...
 ```
 
 ## Properties

@@ -4,23 +4,18 @@ The `Custom::KongCredential` creates a Kong Credential .
 ## Syntax
 To declare this entity in your AWS CloudFormation template, use the following syntax:
 
-```json
-{
-  "Type" : "Custom::KongCredential",
-  "Properties" : {
-    "AdminUrl": String,
-    "JWT": {
-        "Issuer": String,
-        "PrivateKeyParameterName": String
-    },
-    "ServiceToken" : String,
-    "PluginName": String,
-    "Credential" : {
-      "consumer_id": String,
-      ...
-    }
-  }
-}
+```yaml
+Type: Custom::KongCredential
+Properties:
+  AdminUrl: String
+  JWT:
+    Issuer: String
+    PrivateKeyParameterName: String
+  ServiceToken: String
+  PluginName: String
+  Credential:
+    consumer_id: String
+    ...
 ```
 
 ## Properties

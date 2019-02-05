@@ -6,22 +6,17 @@ Support for credentials is not yet available, making this resource slightly less
 ## Syntax
 To declare this entity in your AWS CloudFormation template, use the following syntax:
 
-```json
-{
-  "Type" : "Custom::KongConsumer",
-  "Properties" : {
-    "AdminUrl": String,
-    "JWT": {
-        "Issuer": String,
-        "PrivateKeyParameterName": String
-    },
-    "ServiceToken" : String,
-    "Consumer" : {
-      "username": String,
-      "custom_id": String
-    }
-  }
-}
+```yaml
+Type: Custom::KongConsumer
+Properties:
+  AdminUrl: String
+  JWT:
+    Issuer: String
+    PrivateKeyParameterName: String
+  ServiceToken: String
+  Consumer:
+    username: String
+    custom_id: String
 ```
 
 ## Properties
