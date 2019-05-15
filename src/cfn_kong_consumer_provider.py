@@ -23,7 +23,7 @@ request_schema = {
         },
         "Consumer": {
             "type": "object",
-            "oneOf": [{
+            "anyOf": [{
                 "properties": {
                     "custom_id": {
                         "type": "string"
