@@ -115,5 +115,8 @@ curl $ADMIN_URL/consumers/johndoe/key-auth
 
 ## Note
 As of version 0.5.0 we added support for Kong `service` and `route` API objects and deprecated support for the Kong `api` API object. 
-As of version 0.6.0 we have dropped support for Custom::KongAPI and Kong API version 0.x.
+As of version 0.6.0 we have dropped support for Custom::KongAPI and Kong API version 0.x. 
 
+# Upgrading from 0.5.x
+- Custom::KongAPI resources should be replaced by a Custom::KongService and Custom::KongRoute pair.
+- Anywhere reference to consumer\_id, service\_id or route\_id should be replaced with the nested construct `"<consumer|service|route>": { "id": "<id>" }` or it's yaml equivalent.
