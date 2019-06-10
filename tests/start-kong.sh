@@ -4,7 +4,7 @@ if curl -sS -o /dev/null localhost:8000 && curl -sS -o /dev/null localhost:8001/
 	exit 0
 fi
 
-KONG_VERSION=0.14
+KONG_VERSION=1.1
 docker pull postgres:9.6
 docker pull kong:$KONG_VERSION
 
@@ -23,6 +23,13 @@ while ! docker exec -e PGPASSWORD=kong $KONG_DB psql --host localhost --user kon
 	C=$(($C +1))
 done
 echo
+
+docker run -it --rm \
+    --link $KONG_DB:kong-database \
+    -e KONG_DATABASE=postgres \
+    -e KONG_PG_HOST=kong-database \
+    -e KONG_CASSANDRA_CONTACT_POINTS=kong-database \
+    kong:$KONG_VERSION kong migrations bootstrap
 
 docker run -it --rm \
     --link $KONG_DB:kong-database \

@@ -16,7 +16,7 @@ def test_crud():
     assert response['Status'] == 'SUCCESS', response['Reason']
     consumer_id = response['PhysicalResourceId']
 
-    acl = {'consumer_id': str(consumer_id), 'group': 'binx.io'}
+    acl = {'consumer':{'id': str(consumer_id)}, 'group': 'binx.io'}
     request = Request('Create', acl)
     response = handler(request, {})
     assert response['Status'] == 'SUCCESS', response['Reason']
@@ -27,7 +27,7 @@ def test_crud():
     assert r.status_code == 200, r.text
     assert r.json()['group'] == 'binx.io'
 
-    acl = {'consumer_id': str(consumer_id), 'group': 'xebia'}
+    acl = {'consumer': {'id': str(consumer_id)}, 'group': 'xebia'}
     request = Request('Update', acl, acl_id)
     response = handler(request, {})
     assert response['Status'] == 'SUCCESS', response['Reason']
@@ -37,7 +37,7 @@ def test_crud():
     assert r.status_code == 200, r.text
     assert r.json()['group'] == 'xebia'
 
-    acl = {'consumer_id': str(consumer_id), 'group': 'xebia'}
+    acl = {'consumer': {'id': str(consumer_id)}, 'group': 'xebia'}
     request = Request('Delete', acl, acl_id)
     response = handler(request, {})
     assert response['Status'] == 'SUCCESS', response['Reason']
