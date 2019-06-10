@@ -88,15 +88,9 @@ For the demo to work, we need a deployed Kong API Gateway that is accessible fro
 *not* have one, type:
 
 ```sh
-aws cloudformation create-stack --stack-name kong-environment \
-	--capabilities CAPABILITY_IAM \
-	--template-body file://cloudformation/kong.yaml \
-	--parameters ParameterKey=KongKeyName,ParameterValue=#insert-your-key-name-here#
-
-aws cloudformation wait stack-create-complete  --stack-name kong-environment
-
-ADMIN_URL=$(aws --output text --query 'Stacks[*].Outputs[?OutputKey==`AdminURL`].OutputValue' \
-		cloudformation describe-stacks --stack-name kong-environment)
+cd tests
+./start-docker.sh
+ADMIN_URL=$(curl -sS  http://localhost:4040/api/tunnels/ | jq -r '.tunnels| map(select(.proto == "http")|.)[0].public_url ')
 export ADMIN_URL
 ```
 Note that it will create an entire Kong setup, including a VPC, loadbalancers and a Postgres Database. Do not forget to clean up
