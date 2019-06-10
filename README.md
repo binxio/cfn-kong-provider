@@ -42,7 +42,7 @@ You specify a CloudFormation resource of type [Custom::KongPlugin](docs/KongPlug
     Properties:
       Plugin:
         name: key-auth
-        service_id: !Ref 'HeaderService'
+        service:id: !Ref 'HeaderService'
       AdminURL: !Ref 'AdminURL'
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-kong-provider'
 ```
@@ -121,3 +121,5 @@ curl $ADMIN_URL/consumers/johndoe/key-auth
 
 ## Note
 As of version 0.5.0 we added support for Kong `service` and `route` API objects and deprecated support for the Kong `api` API object. 
+As of version 0.6.0 we have dropped support for Custom::KongAPI and Kong API version 0.x.
+
