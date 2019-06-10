@@ -15,7 +15,7 @@ Properties:
   PluginName: String
   Credential:
     consumer:
-      tid: String
+      id: String
     ...
 ```
 

@@ -59,7 +59,7 @@ def test_create_on_service():
     assert response['Status'] == 'SUCCESS', response['Reason']
     service_id = response['PhysicalResourceId']
 
-    plugin = {'name': 'http-log', 'service_id': service_id, 'config': {'http_endpoint': 'http://log-forwarder:4443'}}
+    plugin = {'name': 'http-log', 'service': {'id': service_id}, 'config': {'http_endpoint': 'http://log-forwarder:4443'}}
     request = Request('Create', plugin)
     response = handler(request, {})
     assert response['Status'] == 'SUCCESS', response['Reason']

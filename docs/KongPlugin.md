@@ -14,10 +14,12 @@ Properties:
   ServiceToken: String
   Plugin:
     name: String
-    api_id: String
-    consumer_id: String
-    service_id: String
-    route_id: String
+    consumer:
+      id: String
+    service:
+      id: String
+    route:
+      id: String
     config:
       ...
 ```
@@ -32,7 +34,7 @@ You can specify the following properties:
     "ServiceToken" - pointing to the function implementing this (required)
     "Plugin" - object containing all the properties as defined by Kong add-plugin (required).
 
-Check out all properties for "Plugin" at [add-plugin](https://getkong.org/docs/0.11.x/admin-api/#add-plugin).
+Check out all properties for "Plugin" at [add-plugin](https://getkong.org/docs/1.1.x/admin-api/#add-plugin).
 
 ## Return values
 With 'Fn::GetAtt' the following values are available:
