@@ -16,7 +16,7 @@ def test_crud_credentials():
     assert response['Status'] == 'SUCCESS', response['Reason']
     consumer_id = response['PhysicalResourceId']
 
-    cred = {'consumer_id': str(consumer_id),  'key': username}
+    cred = {'consumer': {'id': str(consumer_id)},  'key': username}
     request = Request('Create', cred)
     response = handler(request, {})
     assert response['Status'] == 'SUCCESS', response['Reason']
@@ -27,7 +27,7 @@ def test_crud_credentials():
     assert r.status_code == 200, r.text
     assert r.json()['data'][0]['key'] == username
 
-    cred = {'consumer_id': str(consumer_id), 'key': 'bah-%s' % username}
+    cred = {'consumer': {'id': str(consumer_id)},  'key': 'bah-%s' % username}
     request = Request('Update', cred, cred_id)
     response = handler(request, {})
     assert response['Status'] == 'SUCCESS', response['Reason']
@@ -37,7 +37,7 @@ def test_crud_credentials():
     assert r.status_code == 200, r.text
     assert r.json()['data'][0]['key'] == 'bah-%s' % username
 
-    cred = {'consumer_id': str(consumer_id)}
+    cred = {'consumer': {'id': str(consumer_id)}}
     request = Request('Delete', cred, cred_id)
     response = handler(request, {})
     assert response['Status'] == 'SUCCESS', response['Reason']
@@ -45,7 +45,7 @@ def test_crud_credentials():
     url = '%s/consumers/%s/key-auth' % (request.admin_url, consumer_id)
     r = requests.get(url)
     assert r.status_code == 200, r.text
-    assert r.json()['total'] == 0, r.text
+    assert not r.json()['data'], r.text
 
 
 class Request(dict):
