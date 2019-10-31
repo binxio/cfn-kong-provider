@@ -23,10 +23,17 @@ request_schema = {
         },
         "ACL": {
             "type": "object",
-            "required": ["consumer_id", "group"],
+            "required": ["consumer", "group"],
             "properties": {
-                "consumer_id": {
-                    "type": "string"
+                "consumer": {
+                    "type": "object",
+                    "required": ["id"],
+                    "properties": {
+                        "id": {
+                            "type": "string",
+                            "description": "of the consumer"
+                        }
+                    }
                 },
                 "group": {
                     "type": "string"
@@ -40,13 +47,13 @@ request_schema = {
 class KongACLProvider(KongProvider):
 
     def __init__(self):
-        super(KongACLProvider, self).__init__('consumers/%(consumer_id)s/acls', 'ACL')
+        super(KongACLProvider, self).__init__('consumers/%(consumer.id)s/acls', 'ACL')
         self.request_schema = request_schema
 
     @property
     def resource_url(self):
         acl = self.get("ACL")
-        return '%s/consumers/%s/acls' % (self.get('AdminURL'), acl.get('consumer_id'))
+        return '%s/consumers/%s/acls' % (self.get('AdminURL'), acl.get('consumer',{}).get('id'))
 
 provider = KongACLProvider()
 

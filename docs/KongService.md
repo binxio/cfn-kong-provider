@@ -25,7 +25,7 @@ You can specify the following properties:
     "ServiceToken" - pointing to the function implementing this resource (required)
     "Service" - object containing all the properties as defined by Kong add-service, except `url` (required).
 
-Check out all properties for "Service" at [add-service](https://getkong.org/docs/0.13.x/admin-api/#add-service).
+Check out all properties for "Service" at [add-service](https://getkong.org/docs/1.1.x/admin-api/#add-service).
 
 ## Return values
 With 'Fn::GetAtt' the following values are available:

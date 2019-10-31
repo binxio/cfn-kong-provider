@@ -29,7 +29,8 @@ Resources:
     Properties:
       Plugin:
         name: key-auth
-        service_id: !Ref 'HeaderService'
+        service:
+          id: !Ref 'HeaderService'
       AdminURL: !Ref 'AdminURL'
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-kong-provider'
   KongConsumer:
@@ -44,7 +45,8 @@ Resources:
     DependsOn: KongConsumer
     Properties:
       ACL:
-        consumer_id: !Ref 'KongConsumer'
+        consumer:
+          id: !Ref 'KongConsumer'
         group: admin
       AdminURL: !Ref 'AdminURL'
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-kong-provider'
@@ -54,7 +56,8 @@ Resources:
     Properties:
       PluginName: key-auth
       Credential:
-        consumer_id: !Ref 'KongConsumer'
+        consumer:
+          id: !Ref 'KongConsumer'
         key: 66471684-6BDF-4F11-868F-B513CC391520
       AdminURL: !Ref 'AdminURL'
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-kong-provider'
@@ -64,7 +67,8 @@ Resources:
     Properties:
       PluginName: basic-auth
       Credential:
-        consumer_id: !Ref 'KongConsumer'
+        consumer:
+          id: !Ref 'KongConsumer'
         username: johndoe
         password: tiger
       AdminURL: !Ref 'AdminURL'

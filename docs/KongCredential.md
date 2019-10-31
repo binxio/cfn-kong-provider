@@ -14,7 +14,8 @@ Properties:
   ServiceToken: String
   PluginName: String
   Credential:
-    consumer_id: String
+    consumer:
+      id: String
     ...
 ```
 

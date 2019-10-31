@@ -29,7 +29,7 @@ You can specify the following properties:
     "ServiceToken" - pointing to the function implementing this resource (required).
     "Consumer" - object containing all the properties as defined by add-consumer (required).
 
-Check out all properties for "Plugin" at [add-consumer](https://getkong.org/docs/0.11.x/admin-api/#add-consumer).
+Check out all properties for "Plugin" at [add-consumer](https://getkong.org/docs/1.1.x/admin-api/#add-consumer).
  
 ## Return values
 With 'Fn::GetAtt' the following values are available:

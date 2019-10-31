@@ -1,6 +1,5 @@
 import os
 import logging
-import cfn_kong_api_provider
 import cfn_kong_plugin_provider
 import cfn_kong_consumer_provider
 import cfn_kong_acl_provider
@@ -16,8 +15,6 @@ def handler(request, context):
         return cfn_kong_service_provider.handler(request, context)
     if request['ResourceType'] == 'Custom::KongRoute':
         return cfn_kong_route_provider.handler(request, context)
-    if request['ResourceType'] == 'Custom::KongAPI':
-        return cfn_kong_api_provider.handler(request, context)
     elif request['ResourceType'] == 'Custom::KongPlugin':
         return cfn_kong_plugin_provider.handler(request, context)
     elif request['ResourceType'] == 'Custom::KongACL':

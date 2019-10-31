@@ -13,7 +13,8 @@ Properties:
     PrivateKeyParameterName: String
   ServiceToken: String
   ACL:
-    consumer_id: String
+    consumer:
+      id: String
     group: String
 ```
 
@@ -26,7 +27,7 @@ You can specify the following properties:
     "JWT.PrivateKeyParameterName" - parameter store name containing the private key to sign the token with (required).
     "ServiceToken" - pointing to the function implementing this (required)
     "ACL" - object containing the ACL information.
-    "ACL.consumer_id" - to which to apply the ACL.
+    "ACL.consumer.id" - to which to apply the ACL.
     "ACL.group" - the group name.
 
 

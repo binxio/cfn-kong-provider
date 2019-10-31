@@ -42,7 +42,7 @@ You specify a CloudFormation resource of type [Custom::KongPlugin](docs/KongPlug
     Properties:
       Plugin:
         name: key-auth
-        service_id: !Ref 'HeaderService'
+        service:id: !Ref 'HeaderService'
       AdminURL: !Ref 'AdminURL'
       ServiceToken: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:binxio-cfn-kong-provider'
 ```
@@ -80,7 +80,7 @@ aws cloudformation create-stack \
 aws cloudformation wait stack-create-complete  --stack-name cfn-kong-provider 
 ```
 
-This CloudFormation template will use our pre-packaged provider from `s3://binxio-public-${AWS_REGION}/lambdas/cfn-kong-provider-0.5.2.zip`.
+This CloudFormation template will use our pre-packaged provider from `s3://binxio-public-${AWS_REGION}/lambdas/cfn-kong-provider-0.6.0.zip`.
 
 
 ## Demo
@@ -88,15 +88,9 @@ For the demo to work, we need a deployed Kong API Gateway that is accessible fro
 *not* have one, type:
 
 ```sh
-aws cloudformation create-stack --stack-name kong-environment \
-	--capabilities CAPABILITY_IAM \
-	--template-body file://cloudformation/kong.yaml \
-	--parameters ParameterKey=KongKeyName,ParameterValue=#insert-your-key-name-here#
-
-aws cloudformation wait stack-create-complete  --stack-name kong-environment
-
-ADMIN_URL=$(aws --output text --query 'Stacks[*].Outputs[?OutputKey==`AdminURL`].OutputValue' \
-		cloudformation describe-stacks --stack-name kong-environment)
+cd tests
+./start-docker.sh
+ADMIN_URL=$(curl -sS  http://localhost:4040/api/tunnels/ | jq -r '.tunnels| map(select(.proto == "http")|.)[0].public_url ')
 export ADMIN_URL
 ```
 Note that it will create an entire Kong setup, including a VPC, loadbalancers and a Postgres Database. Do not forget to clean up
@@ -121,3 +115,8 @@ curl $ADMIN_URL/consumers/johndoe/key-auth
 
 ## Note
 As of version 0.5.0 we added support for Kong `service` and `route` API objects and deprecated support for the Kong `api` API object. 
+As of version 0.6.0 we have dropped support for Custom::KongAPI and Kong API version 0.x. 
+
+# Upgrading from 0.5.x
+- Custom::KongAPI resources should be replaced by a Custom::KongService and Custom::KongRoute pair.
+- Anywhere reference to consumer\_id, service\_id or route\_id should be replaced with the nested construct `"<consumer|service|route>": { "id": "<id>" }` or it's yaml equivalent.

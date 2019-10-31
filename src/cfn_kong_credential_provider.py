@@ -27,10 +27,16 @@ request_schema = {
         },
         "Credential": {
             "type": "object",
-            "required": ["consumer_id"],
+            "required": ["consumer"],
             "properties": {
-                "consumer_id": {
-                    "type": "string"
+                "consumer": {
+                    "type": "object",
+                    "required": ["id"],
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        }
+                    }
                 }
             }
         }
@@ -41,13 +47,13 @@ request_schema = {
 class KongCredentialProvider(KongProvider):
 
     def __init__(self):
-        super(KongCredentialProvider, self).__init__('consumers/%(consumer_id)s/%(PluginName)s', 'Credential')
+        super(KongCredentialProvider, self).__init__('consumers/%(consumer.id)s/%(PluginName)s', 'Credential')
         self.request_schema = request_schema
 
     @property
     def resource_url(self):
         creds = self.get('Credential')
-        return '%s/consumers/%s/%s' % (self.get('AdminURL'), creds.get('consumer_id'), self.get('PluginName'))
+        return '%s/consumers/%s/%s' % (self.get('AdminURL'), creds.get('consumer',{}).get('id'), self.get('PluginName'))
 
 provider = KongCredentialProvider()
 

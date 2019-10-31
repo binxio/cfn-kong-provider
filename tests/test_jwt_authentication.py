@@ -95,7 +95,7 @@ def create_secure_admin_service(name):
     assert route_response.status_code == 201, route_response.text
 
     # add jwt plugin
-    plugin = {'name': 'jwt', 'service_id': service_id}
+    plugin = {'name': 'jwt', 'service':{'id': service_id}}
     plugin_response = requests.post('http://localhost:8001/plugins', json=plugin)
     assert plugin_response.status_code == 201 or plugin_response.status_code == 200
 
