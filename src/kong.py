@@ -7,7 +7,8 @@ import cfn_kong_credential_provider
 import cfn_kong_service_provider
 import cfn_kong_route_provider
 
-logging.basicConfig(level=os.getenv('LOG_LEVEL', 'INFO'))
+logger = logging.getLogger()
+logger.setLevel(os.getenv('LOG_LEVEL', 'INFO'))
 
 
 def handler(request, context):
