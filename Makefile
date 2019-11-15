@@ -17,35 +17,25 @@ help:
 
 deploy: target/$(NAME)-$(VERSION).zip
 	aws s3 --region $(AWS_REGION) \
-		cp target/$(NAME)-$(VERSION).zip \
+		cp --acl public-read \
+		target/$(NAME)-$(VERSION).zip \
 		s3://$(S3_BUCKET_PREFIX)-$(AWS_REGION)/lambdas/$(NAME)-$(VERSION).zip 
-	aws s3 --region $(AWS_REGION) cp \
+	aws s3 --region $(AWS_REGION) \
+		cp --acl public-read \
 		s3://$(S3_BUCKET_PREFIX)-$(AWS_REGION)/lambdas/$(NAME)-$(VERSION).zip \
 		s3://$(S3_BUCKET_PREFIX)-$(AWS_REGION)/lambdas/$(NAME)-latest.zip 
-	aws s3api --region $(AWS_REGION) \
-		put-object-acl --bucket $(S3_BUCKET_PREFIX)-$(AWS_REGION) \
-		--acl public-read --key lambdas/$(NAME)-$(VERSION).zip 
-	aws s3api --region $(AWS_REGION) \
-		put-object-acl --bucket $(S3_BUCKET_PREFIX)-$(AWS_REGION) \
-		--acl public-read --key lambdas/$(NAME)-latest.zip 
 
 deploy-all-regions: deploy
 	@for REGION in $(ALL_REGIONS); do \
 		echo "copying to region $$REGION.." ; \
-		aws s3 --region $(AWS_REGION) \
-			cp  \
+		aws s3 --region $$REGION \
+			cp --acl public-read \
 			s3://$(S3_BUCKET_PREFIX)-$(AWS_REGION)/lambdas/$(NAME)-$(VERSION).zip \
 			s3://$(S3_BUCKET_PREFIX)-$$REGION/lambdas/$(NAME)-$(VERSION).zip; \
 		aws s3 --region $$REGION \
-			cp  \
+			cp --acl public-read \
 			s3://$(S3_BUCKET_PREFIX)-$$REGION/lambdas/$(NAME)-$(VERSION).zip \
 			s3://$(S3_BUCKET_PREFIX)-$$REGION/lambdas/$(NAME)-latest.zip; \
-		aws s3api --region $$REGION \
-			put-object-acl --bucket $(S3_BUCKET_PREFIX)-$$REGION \
-			--acl public-read --key lambdas/$(NAME)-$(VERSION).zip; \
-		aws s3api --region $$REGION \
-			put-object-acl --bucket $(S3_BUCKET_PREFIX)-$$REGION \
-			--acl public-read --key lambdas/$(NAME)-latest.zip; \
 	done
 		
 
