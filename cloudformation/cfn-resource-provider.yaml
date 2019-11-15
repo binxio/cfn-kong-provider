@@ -15,7 +15,7 @@ Parameters:
     Default: ''
   CFNCustomProviderZipFileName:
     Type: String
-    Default: lambdas/cfn-kong-provider-0.6.0.zip
+    Default: lambdas/cfn-kong-provider-0.6.1.zip
 Conditions:
   UsePublicBucket: !Equals
     - !Ref 'LambdaS3Bucket'
