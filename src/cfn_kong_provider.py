@@ -34,7 +34,7 @@ class KongProvider(ResourceProvider):
                 jwt.set_private_key(private_key.encode('ascii'))
                 jwt.generate()
 
-                self.headers['Authorization'] = 'Bearer %s' % jwt.token#.decode('ascii')
+                self.headers['Authorization'] = 'Bearer %s' % jwt.token
             except ClientError as e:
                 self.fail('could not get private key, %s' % e.response['Error'])
                 return False
