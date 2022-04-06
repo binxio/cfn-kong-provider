@@ -34,7 +34,7 @@ class KongProvider(ResourceProvider):
                 jwt.set_private_key(private_key.encode('ascii'))
                 jwt.generate()
 
-                self.headers['Authorization'] = 'Bearer %s' % jwt.token.decode('ascii')
+                self.headers['Authorization'] = 'Bearer %s' % jwt.token#.decode('ascii')
             except ClientError as e:
                 self.fail('could not get private key, %s' % e.response['Error'])
                 return False
@@ -66,7 +66,8 @@ class KongProvider(ResourceProvider):
             url = '%s/%s' % (self.resource_url, self.physical_resource_id)
 
             try:
-                response = requests.patch(url, headers=self.headers, json=self.get(self.property_name))
+                json = self.transform_before_patch(self.property_name)
+                response = requests.patch(url, headers=self.headers, json=json)
                 if response.status_code in (200, 201):
                     r = response.json()
                     self.physical_resource_id = r['id']
@@ -75,6 +76,9 @@ class KongProvider(ResourceProvider):
                     self.fail('Could not update the %s, %s' % (self.property_name, response.text))
             except IOError as e:
                 self.fail('Could not update the %s, %s' % (self.property_name, str(e)))
+
+    def transform_before_patch(self, property_name):
+        return self.get(property_name)
 
     def delete(self):
         if self.add_jwt():

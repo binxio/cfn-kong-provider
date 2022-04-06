@@ -105,6 +105,42 @@ def test_update():
     assert response['Status'] == 'SUCCESS', response['Reason']
 
 
+def test_update_rate_limiting():
+    plugin = {'name': 'rate-limiting', 'config': {'minute': 30}}
+    first_request = Request('Create', plugin)
+    response = handler(first_request, {})
+    assert response['Status'] == 'SUCCESS', response['Reason']
+    assert 'PhysicalResourceId' in response
+    physical_resource_id = response['PhysicalResourceId']
+
+    def update(old_resource_properties, config):
+        plugin = {'name': 'rate-limiting', 'config': config}
+        request = Request('Update', plugin, physical_resource_id)
+        request['OldResourceProperties'] = old_resource_properties
+        response = handler(request, {})
+        assert response['Status'] == 'SUCCESS', response['Reason']
+
+        url = f'{request.admin_url}/plugins/{physical_resource_id}'
+        response = requests.get(url)
+        assert response.status_code == 200, f'url {url}, return {response.text}'
+        retrieved_plugin = response.json()
+        assert 'config' in retrieved_plugin
+        assert 'second' in retrieved_plugin['config']
+        assert 'minute' in retrieved_plugin['config']
+        assert 'hour' in retrieved_plugin['config']
+        for property in ['second', 'minute', 'hour']:
+            assert retrieved_plugin['config'][property] == config.get(property, None)
+        return request
+
+    second_request = update(first_request['ResourceProperties'], {'hour': 60})
+    third_request = update(second_request['ResourceProperties'], {'hour': 60})
+    update(third_request['ResourceProperties'], {'second': 60})
+
+    request = Request('Delete', plugin, physical_resource_id)
+    response = handler(request, {})
+    assert response['Status'] == 'SUCCESS', response['Reason']
+
+
 def test_bad_delete():
     request = Request('Delete', {}, "NotaUUidClearly")
     response = handler(request, {})

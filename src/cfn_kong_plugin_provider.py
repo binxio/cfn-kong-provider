@@ -71,6 +71,16 @@ class KongPluginProvider(KongProvider):
         super(KongPluginProvider, self).__init__('plugins', 'Plugin')
         self.request_schema = request_schema
 
+    # override
+    def transform_before_patch(self, property_name):
+        new_config = self.get(property_name)
+        if new_config['name'] == 'rate-limiting':
+            old_config = self.get_old(property_name)
+            removed_settings = {key: None for key in old_config['config'].keys() - new_config['config'].keys()}
+            new_config['config'].update(removed_settings)
+        return new_config
+
+
 provider = KongPluginProvider()
 
 
