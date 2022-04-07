@@ -1,5 +1,5 @@
 from cfn_kong_provider import KongProvider
-import requests
+from copy import deepcopy
 
 request_schema = {
     "type": "object",
@@ -72,13 +72,55 @@ class KongPluginProvider(KongProvider):
         self.request_schema = request_schema
 
     # override
-    def transform_before_patch(self, property_name):
-        new_config = self.get(property_name)
-        if new_config['name'] == 'rate-limiting':
-            old_config = self.get_old(property_name)
-            removed_settings = {key: None for key in old_config['config'].keys() - new_config['config'].keys()}
-            new_config['config'].update(removed_settings)
-        return new_config
+    def get_patch_request(self) -> dict:
+        request = self.get(self.property_name)
+        if request['name'] != 'rate-limiting':
+            return request
+
+        old_request = self.get_old(self.property_name,{})
+        return update_rate_limit_request(old_request, request)
+
+
+def update_rate_limit_request(old_request: dict, new_request: dict) -> dict:
+    """
+    if the rate limit is updated, clear any old rate limit configuration
+    >>> update_rate_limit_request(\
+             {"config": {"second": 5, "policy": "local"}}, \
+             {"config": {"hour": 100, "policy": "local"}})
+    {'config': {'second': None, 'hour': 100, 'policy': 'local'}}
+    >>> update_rate_limit_request(\
+             {"config": {"policy": "local"}}, \
+             {"config": {"hour": 100, "policy": "local"}})
+    {'config': {'hour': 100, 'policy': 'local'}}
+    >>> update_rate_limit_request(\
+             {}, \
+             {"config": {"hour": 100, "policy": "local"}})
+    {'config': {'hour': 100, 'policy': 'local'}}
+    >>> update_rate_limit_request(\
+             {"config": {"second": 5, "policy": "local"}}, \
+             {"config": {"policy": "remote"}})
+    {'config': {'policy': 'remote'}}
+    >>> update_rate_limit_request(\
+             {"config": {"second": 5, "policy": "local"}}, \
+             {})
+    {}
+    """
+    old_config = old_request.get('config',{}) if old_request else {}
+    new_config = new_request.get('config',{}) if new_request else {}
+
+    if not old_config or not new_config:
+        return new_request
+
+    rates = {"second", "minute", "hour", "day", "month", "year"}
+    if not rates.intersection(new_config.keys()):
+        return new_request
+
+    config = {key: None for key in old_request['config'].keys() - new_request['config'].keys()}
+    config.update(new_config)
+
+    new_request = deepcopy(new_request)
+    new_request['config'] = config
+    return new_request
 
 
 provider = KongPluginProvider()

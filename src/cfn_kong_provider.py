@@ -66,8 +66,7 @@ class KongProvider(ResourceProvider):
             url = '%s/%s' % (self.resource_url, self.physical_resource_id)
 
             try:
-                json = self.transform_before_patch(self.property_name)
-                response = requests.patch(url, headers=self.headers, json=json)
+                response = requests.patch(url, headers=self.headers, json=self.get_patch_request())
                 if response.status_code in (200, 201):
                     r = response.json()
                     self.physical_resource_id = r['id']
@@ -77,8 +76,11 @@ class KongProvider(ResourceProvider):
             except IOError as e:
                 self.fail('Could not update the %s, %s' % (self.property_name, str(e)))
 
-    def transform_before_patch(self, property_name):
-        return self.get(property_name)
+    def get_patch_request(self) -> dict:
+        """
+        returns the body for an patch request of a kong resource
+        """
+        return self.get(self.property_name)
 
     def delete(self):
         if self.add_jwt():
