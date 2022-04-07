@@ -85,4 +85,4 @@ Resources:
         - SecurityGroupIds:
             - !Ref 'DefaultSecurityGroup'
           SubnetIds: !Ref 'PrivateSubnets'
-      Runtime: python3.6
+      Runtime: python3.7
