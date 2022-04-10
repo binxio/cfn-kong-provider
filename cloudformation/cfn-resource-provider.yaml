@@ -15,7 +15,7 @@ Parameters:
     Default: ''
   CFNCustomProviderZipFileName:
     Type: String
-    Default: lambdas/cfn-kong-provider-0.6.4.zip
+    Default: lambdas/cfn-kong-provider-0.6.5.zip
 Conditions:
   UsePublicBucket: !Equals
     - !Ref 'LambdaS3Bucket'
@@ -85,4 +85,4 @@ Resources:
         - SecurityGroupIds:
             - !Ref 'DefaultSecurityGroup'
           SubnetIds: !Ref 'PrivateSubnets'
-      Runtime: python3.7
+      Runtime: python3.9
