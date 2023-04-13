@@ -1,5 +1,5 @@
 import uuid
-
+from copy import copy
 import requests
 
 from kong import handler
@@ -45,6 +45,45 @@ def test_crud():
     url = '%s/consumers/%s/acls/%s' % (request.admin_url, consumer_id, acl_id)
     r = requests.get(url)
     assert r.status_code == 404, r.text
+
+
+def test_deleted_consumer_delete():
+    username = 'user-%s' % uuid.uuid4()
+    consumer = {'username': username}
+    create_user = Request('Create', consumer)
+    create_user['ResourceType'] = 'Custom::KongConsumer'
+    create_user['ResourceProperties']['Consumer'] = create_user['ResourceProperties']['ACL']
+    del create_user['ResourceProperties']['ACL']
+    user_created = handler(create_user, {})
+    assert user_created['Status'] == 'SUCCESS', user_created['Reason']
+    consumer_id = user_created['PhysicalResourceId']
+
+    acl = {'consumer':{'id': str(consumer_id)}, 'group': 'binx.io'}
+    request = Request('Create', acl)
+    response = handler(request, {})
+    assert response['Status'] == 'SUCCESS', response['Reason']
+    acl_id = response['PhysicalResourceId']
+
+
+    delete_user = copy(create_user)
+    delete_user['RequestType'] = 'Delete'
+    delete_user['PhysicalResourceId'] = consumer_id
+    user_deleted = handler(delete_user, {})
+    assert user_deleted['Status'] == 'SUCCESS', response['Reason']
+
+    delete_user['RequestType'] = 'Delete'
+    delete_user['PhysicalResourceId'] = consumer_id
+    user_deleted = handler(delete_user, {})
+    assert user_deleted['Status'] == 'SUCCESS', response['Reason']
+
+    url = '%s/consumers/%s/acls/%s' % (request.admin_url, consumer_id, acl_id)
+    r = requests.get(url)
+    assert r.status_code == 404, r.text
+
+    acl = {'consumer': {'id': str(consumer_id)}, 'group': 'binx.io'}
+    request = Request('Delete', acl, acl_id)
+    response = handler(request, {})
+    assert response['Status'] == 'SUCCESS', response['Reason']
 
 
 class Request(dict):

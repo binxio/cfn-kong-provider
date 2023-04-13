@@ -53,6 +53,7 @@ def test_with_jwt():
     # delete the Service
     request = Request('Delete', service, physical_resource_id)
     request['ResourceProperties']['JWT'] = jwt_config
+    request.admin_url = admin_url
     response = handler(request, {})
     assert response['Status'] == 'SUCCESS', response['Reason']
 
@@ -64,6 +65,7 @@ def test_with_jwt():
     # check bad private key
     request = Request('Create', service)
     request['ResourceProperties']['JWT'] = {'Issuer': 'Admin', 'PrivateKeyParameterName': 'does-not-exist'}
+    request.admin_url = admin_url
     response = handler(request, {})
     assert response['Status'] == 'FAILED', response['Reason']
     assert response['Reason'].startswith('could not get private key')

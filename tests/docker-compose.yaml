@@ -2,10 +2,11 @@ version: '2.4'
 
 services:
   postgres:
-    image: postgres:9.6
+    image: postgres:13
     environment:
       - POSTGRES_USER=kong
       - POSTGRES_DB=kong
+      - POSTGRES_PASSWORD=kong
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "kong"]
       interval: 10s
@@ -13,7 +14,7 @@ services:
       retries: 5
 
   migrations:
-    image: kong:1.1
+    image: kong:2.8
     stop_signal: SIGTERM
     depends_on:
       postgres:
@@ -30,6 +31,8 @@ services:
     environment:
       - KONG_LOG_LEVEL=error
       - KONG_DATABASE=postgres
+      - KONG_PG_USER=kong
+      - KONG_PG_PASSWORD=kong
       - KONG_PG_HOST=postgres
       - KONG_PROXY_ACCESS_LOG=/dev/stdout
       - KONG_ADMIN_ACCESS_LOG=/dev/stdout
@@ -37,18 +40,20 @@ services:
       - KONG_ADMIN_ERROR_LOG=/dev/stderr
       - KONG_ADMIN_LISTEN=0.0.0.0:8001, 0.0.0.0:8444 ssl
   kong:
-    image: kong:1.1
+    image: kong:2.8
     stop_signal: SIGTERM
     depends_on:
       migrations:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-sS", "--fail", "http://localhost:8001/status"]
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8001/status"]
       start_period: 0s
       interval: 10s
     environment:
       - KONG_LOG_LEVEL=error
       - KONG_DATABASE=postgres
+      - KONG_PG_USER=kong
+      - KONG_PG_PASSWORD=kong
       - KONG_PG_HOST=postgres
       - KONG_PROXY_ACCESS_LOG=/dev/stdout
       - KONG_ADMIN_ACCESS_LOG=/dev/stdout
