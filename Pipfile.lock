@@ -19,18 +19,18 @@
     "develop": {
         "click": {
             "hashes": [
-                "sha256:24e1a4a9ec5bf6299411369b208c1df2188d9eb8d916302fe6bf03faed227f1e",
-                "sha256:479707fe14d9ec9a0757618b7a100a0ae4c4e236fac5b7f80ca68028141a1a72"
+                "sha256:ae74fb96c20a0277a1d615f1e4d73c8414f5a98db8b799a7931d1582f3390c28",
+                "sha256:ca9853ad459e787e2192211578cc907e7594e294c7ccc834310722b41b9ca6de"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==8.1.2"
+            "version": "==8.1.7"
         },
         "git-release-tag": {
             "hashes": [
-                "sha256:c875ca6a376374dc94274570ddde71e429e18381da0b528c84df53fc97f4497c"
+                "sha256:ad68d4739c7f27b395a37c90add0152b90c830dccce8ac29b2cbf721fae31968"
             ],
             "index": "pypi",
-            "version": "==0.6.2"
+            "version": "==0.7.6"
         }
     }
 }
