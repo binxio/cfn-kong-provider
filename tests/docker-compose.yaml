@@ -14,7 +14,7 @@ services:
       retries: 5
 
   migrations:
-    image: kong:2.8
+    image: kong:2.8.3-alpine
     stop_signal: SIGTERM
     depends_on:
       postgres:
@@ -40,7 +40,7 @@ services:
       - KONG_ADMIN_ERROR_LOG=/dev/stderr
       - KONG_ADMIN_LISTEN=0.0.0.0:8001, 0.0.0.0:8444 ssl
   kong:
-    image: kong:2.8
+    image: kong:2.8.3-alpine
     stop_signal: SIGTERM
     depends_on:
       migrations:

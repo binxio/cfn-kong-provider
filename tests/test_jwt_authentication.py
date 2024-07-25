@@ -1,11 +1,16 @@
 import subprocess
 import uuid
 
+import time
+from typing import Callable
+
 import boto3
 import requests
+import logging
 from cryptography.hazmat.backends import default_backend as crypto_default_backend
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
+from jwt_generator import JWTGenerator
 
 from kong import handler
 
@@ -79,6 +84,23 @@ def test_with_jwt():
     remove_secure_admin_service(name, jwt_config)
 
 
+def _wait_for_status_code(f: Callable[[], requests.Response], codes: list[int], message: str):
+    """
+    Wait until the response status code is equal to `codes`. Timeout after 30 attempts.
+    """
+    count = 1
+    response = f()
+    while count < 30 and response.status_code not in codes:
+        logging.info(message)
+        time.sleep(0.2)
+        response = f()
+        count += 1
+
+    if response.status_code not in codes:
+        raise AssertionError(f'timeout waiting for {response.url} to return one of {codes}, got {response.status_code}')
+    return response
+
+
 def create_secure_admin_service(name):
     private_key, public_key = create_key_pair()
 
@@ -87,19 +109,25 @@ def create_secure_admin_service(name):
     ssm.put_parameter(Name=private_key_parameter_name, Type='SecureString', Value=private_key)
 
     # create admin service
-    service = {'name': name,  'protocol': 'http', 'host': 'localhost', 'port': 8001}
+    service = {'name': name, 'protocol': 'http', 'host': 'localhost', 'port': 8001}
     service_response = requests.post('http://localhost:8001/services', json=service)
     assert service_response.status_code == 201, service_response.text
-    service_id = physical_resource_id = service_response.json()['id']
+    service_id = service_response.json()['id']
 
-    route = {'paths': ['/admin/%s' % name], 'service': { 'id': service_id}}
+    route = {'paths': ['/admin/%s' % name], 'service': {'id': service_id}}
     route_response = requests.post('http://localhost:8001/routes', json=route)
     assert route_response.status_code == 201, route_response.text
 
+    _wait_for_status_code(lambda: requests.get('http://localhost:8000/admin/%s' % name), [200],
+                          f'Waiting for the service /admin/{name} to become available')
+
     # add jwt plugin
-    plugin = {'name': 'jwt', 'service':{'id': service_id}}
+    plugin = {'name': 'jwt', 'service': {'id': service_id}}
     plugin_response = requests.post('http://localhost:8001/plugins', json=plugin)
     assert plugin_response.status_code == 201 or plugin_response.status_code == 200
+
+    _wait_for_status_code(lambda: requests.get('http://localhost:8000/admin/%s' % name), [401],
+                          f'Waiting for the service /admin/{name} to have the JWT plugin enabled')
 
     # create consumer
     url = 'http://localhost:8001/consumers'
@@ -110,7 +138,18 @@ def create_secure_admin_service(name):
     url = 'http://localhost:8001/consumers/%s/jwt' % name
     creds_response = requests.post(url, json={'key': name, 'rsa_public_key': public_key, 'algorithm': 'RS256'})
     assert creds_response.status_code == 201, creds_response.text
-    return 'http://localhost:8000/admin/%s' % name, {'Issuer': name, 'PrivateKeyParameterName': private_key_parameter_name}
+
+    jwt = JWTGenerator()
+    jwt.issuer = name
+    jwt.set_private_key(private_key.encode('ascii'))
+    jwt.generate()
+
+    headers = {'Authorization': 'Bearer %s' % jwt.token}
+    _wait_for_status_code(lambda: requests.get('http://localhost:8000/admin/%s' % name, headers=headers), [200],
+                          f'Waiting for consumer to have access with JWT to /admin/{name}')
+
+    return 'http://localhost:8000/admin/%s' % name, {'Issuer': name,
+                                                     'PrivateKeyParameterName': private_key_parameter_name}
 
 
 def remove_secure_admin_service(name, jwt_config):
@@ -191,4 +230,5 @@ class Request(dict):
                 'Service': service
             }})
 
-        self['PhysicalResourceId'] = physical_resource_id if physical_resource_id is not None else 'initial-%s' % str(uuid.uuid4())
+        self['PhysicalResourceId'] = physical_resource_id if physical_resource_id is not None else 'initial-%s' % str(
+            uuid.uuid4())
