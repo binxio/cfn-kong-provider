@@ -1,5 +1,8 @@
 #!/bin/bash
-NGROK_AUTHTOKEN=$(yq .authtoken  ~/.ngrok2/ngrok.yml) docker-compose up -d
+if [[ -z $NGROK_AUTHTOKEN ]]; then
+	export NGROK_AUTHTOKEN=$(op read op://Private/ngrok-authtoken/credential)
+fi
+docker-compose up -d
 echo 'waiting for kong.'
 while ! curl -sS --fail -o /dev/null http://localhost:8001/status ; do
 	echo -n '.'
