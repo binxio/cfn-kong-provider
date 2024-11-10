@@ -67,15 +67,17 @@ services:
       - 8444:8444
 
   ngrok:
-    build: ngrok
+    image: ngrok/ngrok
     stop_signal: SIGTERM
-    depends_on:
-      kong:
-        condition: service_healthy
+#    depends_on:
+#      kong:
+#        condition: service_healthy
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN}
     command:
       - http
       - kong:8001
-      - -log
+      - --log
       - stdout
     ports:
       - 4040:4040

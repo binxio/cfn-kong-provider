@@ -4,6 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+boto3 = "*"
+cfn_resource_provider = "*"
+jwt_generator = "*"
+cryptography = "*"
+requests = "*"
 
 [dev-packages]
 git-release-tag = "*"

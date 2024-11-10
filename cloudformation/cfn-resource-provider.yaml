@@ -10,24 +10,13 @@ Parameters:
   DefaultSecurityGroup:
     Type: String
     Default: ''
-  LambdaS3Bucket:
-    Type: String
-    Default: ''
-  CFNCustomProviderZipFileName:
-    Type: String
-    Default: lambdas/cfn-kong-provider-0.6.5.zip
 Conditions:
-  UsePublicBucket: !Equals
-    - !Ref 'LambdaS3Bucket'
-    - ''
   DoNotAttachToVpc: !Equals
     - !Ref 'AppVPC'
     - ''
 Resources:
   LambdaPolicy:
     Type: AWS::IAM::Policy
-    DependsOn:
-      - LambdaRole
     Properties:
       PolicyName: CFNCustomKongProviderPolicy
       PolicyDocument:
@@ -63,20 +52,17 @@ Resources:
             Principal:
               Service:
                 - lambda.amazonaws.com
+
   CFNKongProvider:
     Type: AWS::Lambda::Function
     DependsOn:
-      - LambdaRole
+      - LambdaPolicy
     Properties:
       Description: CloudFormation Custom::KongAPI implementation
+      PackageType: Image
       Code:
-        S3Bucket: !If
-          - UsePublicBucket
-          - !Sub 'binxio-public-${AWS::Region}'
-          - !Ref 'LambdaS3Bucket'
-        S3Key: !Ref 'CFNCustomProviderZipFileName'
+        ImageUri: 463637877380.dkr.ecr.eu-central-1.amazonaws.com/xebia/cfn-kong-provider:0.6.5-b394d58-dirty
       FunctionName: binxio-cfn-kong-provider
-      Handler: kong.handler
       MemorySize: 128
       Role: !GetAtt 'LambdaRole.Arn'
       VpcConfig: !If
@@ -85,4 +71,3 @@ Resources:
         - SecurityGroupIds:
             - !Ref 'DefaultSecurityGroup'
           SubnetIds: !Ref 'PrivateSubnets'
-      Runtime: python3.9

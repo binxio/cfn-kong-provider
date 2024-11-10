@@ -1,7 +1,7 @@
 from alpine:latest
 
-run wget -O /tmp/ngrok.zip https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip && \
-    unzip -d /usr/local/bin /tmp/ngrok.zip  && \
+run wget -O /tmp/ngrok.zip https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-v3-stable-linux-amd64.tgz && \
+    tar -xvzf /tmp/ngrok.zip  -C /usr/local/bin && \
     apk --no-cache add libc6-compat && \
     rm -f /tmp/ngrok.zip
 
